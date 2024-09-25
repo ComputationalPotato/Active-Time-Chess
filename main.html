@@ -7,23 +7,74 @@
     <title>Chessboard Display</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         #board {
             margin: 20px auto;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        @media (max-width: 600px) {
+            #board {
+                width: 100% !important;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div id="board"></div>
+    <div id="board" style="width: 500px"></div>
+    <div class="button-container">
+        <button id="startBtn">Start Position</button>
+        <button id="clearBtn">Clear Board</button>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-    <script>
-        var board = Chessboard('board', {
-            position: 'start',  // This sets the board to the starting position
-            draggable: true     // Pieces can be dragged
-        });
-    </script>
-</body>
+    <script var ruyLopez = 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R'></script>
 
+    <script>
+       var board = Chessboard('board', {position:'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R', draggable: true});
+       $('#startBtn').on('click', board.start);
+       $('#clearBtn').on('click', board.clear);
+    </script>
+
+</body>
 </html>
