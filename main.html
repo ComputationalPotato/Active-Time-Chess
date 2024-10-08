@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,7 +57,6 @@
         }
     </style>
 </head>
-
 <body>
     <div id="board" style="width: 500px"></div>
     <div class="button-container">
@@ -68,14 +66,80 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-    <script var ruyLopez = 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
     <script>
-       var board = Chessboard('board', {position:'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R', draggable: true});
-       $('#startBtn').on('click', board.start);
-       $('#clearBtn').on('click', board.clear);
+        var board = null;
+        var game = new Chess(); // Initialize chess.js game instance
+
+        function onDragStart(source, piece, position, orientation) {
+            // Prevent interaction if the game is over or wrong side attempts to move
+            if (game.game_over() || 
+                (game.turn() === 'w' && piece.search(/^b/) !== -1) || 
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        function onDrop(source, target) {
+            // Attempt to make the move
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Always promote to a queen for simplicity
+            });
+
+            // Revert illegal moves
+            if (move === null) return 'snapback';
+            updateStatus();
+        }
+
+        function onSnapEnd() {
+            // Update the board position after the piece snap for special moves
+            board.position(game.fen());
+        }
+
+        function updateStatus() {
+            // Display game status
+            var status = '';
+
+            var moveColor = game.turn() === 'w' ? 'White' : 'Black';
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + moveColor + ' is in checkmate.';
+            } else if (game.in_draw()) {
+                status = 'Game over, drawn position';
+            } else {
+                status = moveColor + ' to move';
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' is in check';
+                }
+            }
+
+            $('#status').text(status);
+        }
+
+        var config = {
+            draggable: true,
+            position: 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        };
+
+        board = Chessboard('board', config);
+
+        $('#startBtn').on('click', function() {
+            game.reset(); // Reset game in chess.js
+            board.start();
+            updateStatus();
+        });
+
+        $('#clearBtn').on('click', function() {
+            game.clear(); // Clear game in chess.js
+            board.clear();
+            $('#status').text('');
+        });
     </script>
-
+    <div id="status" style="text-align: center; margin-top: 10px;"></div>
 </body>
-
 </html>
