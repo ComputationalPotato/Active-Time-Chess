@@ -29,6 +29,8 @@ showInputsButton.addEventListener('click', () => {
     // Reset the container and show the original button
     inputContainer.innerHTML = '';
     showInputsButton.style.display = 'block';
+    showInputsButton.style.margin = '0 auto'; // Center the button
+
     inputContainer.style.display = 'none';
   });
 });
