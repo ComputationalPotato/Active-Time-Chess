@@ -16,3 +16,6 @@ React Native with Expo:
 Cross-Platform: Build once, deploy on both iOS and Android.
 Expo Toolkit: Speeds up development with easy access to native features and testing tools.
 Reusable Components: Modular design allows for easy maintenance and reuse across platforms.
+
+Real-time communication:
+* 
