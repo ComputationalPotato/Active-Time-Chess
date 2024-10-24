@@ -16,7 +16,12 @@ class TicTacToeClient {
       var config = {
         draggable: true,
         dropOffBoard: 'snapback', // this is the default
-        position: 'start'
+        position: 'start',
+        showErrors: 'console',
+        pieceTheme: (piece) => {
+          const imgPath = `/img/chesspieces/wikipedia/${piece}.png`; 
+          return imgPath;
+      }
       }
       
   
