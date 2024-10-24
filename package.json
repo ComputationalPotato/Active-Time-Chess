@@ -4,15 +4,19 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel index.html --open"
+    "start": "parcel index.html --open",
+    "serve": "nvm run 18 --experimental-specifier-resolution=node src/server.js"
   },
   "browserslist": "defaults and supports async-functions",
   "keywords": [],
+  "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "boardgame.io": "^0.50.2",
-    "chessboardjs": "^0.0.1"
+    "chessboardjs": "^0.0.1",
+    "esm": "^3.2.25",
+    "natives": "^1.1.6"
   },
   "targets": {
     "default": {
