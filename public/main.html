@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Chessboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+    <style>
+        .board-container {
+            position: relative;
+            width: 400px;
+            margin: 20px auto;
+        }
+
+        .cooldown-overlay {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .cooldown-circle {
+            fill: rgba(255, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="board-container">
+        <div id="myBoard"></div>
+        <svg class="cooldown-overlay" id="cooldownOverlay"></svg>
+    </div>
+    <div class="button-container">
+        <button id="startBtn">Start Position</button>
+        <button id="clearBtn">Clear Board</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
+
+    <script type="module">
+        import { updateCooldownCircle, updateOverlaySize, isLegalMove, isPathBlocked } from './gamelogic.js';
+
+        let board = null;
+        const COOLDOWN_TIME = 3000;
+        const pieceCooldowns = new Map();
+        let squareSize = 0;
+        let playerColor = 'white'; // Default color
+
+        // Initialize Socket.IO
+        const socket = io();
+        const gameId = new URLSearchParams(window.location.search).get('game') ||
+            Math.random().toString(36).substring(7);
+
+        // Add game ID to URL without reloading
+        if (!window.location.search.includes('game=')) {
+            window.history.pushState({}, '', `?game=${gameId}`);
+        }
+
+        var config = {
+            draggable: true,
+            position: 'start',
+            onDrop: function (source, target, piece, newPos, oldPos, orientation) {
+                console.log('Attempting move from ' + source + ' to ' + target);
+
+                // Check if it's player's turn based on piece color
+                const pieceColor = piece.charAt(0) === 'w' ? 'white' : 'black';
+                if (pieceColor !== playerColor) {
+                    console.log('Not your turn');
+                    return 'snapback';
+                }
+
+                if (!isLegalMove(source, target, piece, newPos, oldPos)) {
+                    console.log('Illegal move attempted');
+                    return 'snapback';
+                }
+
+                socket.emit('move', {
+                    source,
+                    target,
+                    piece,
+                    newPosition: newPos
+                });
+
+                console.log('Move successful');
+                return true;
+            },
+            onDragStart: function (source, piece, position, orientation) {
+                // Check if piece is on cooldown
+                if (pieceCooldowns.has(source) && Date.now() < pieceCooldowns.get(source)) {
+                    return false;
+                }
+
+                // Only allow moving pieces of player's color
+                const pieceColor = piece.charAt(0) === 'w' ? 'white' : 'black';
+                return pieceColor === playerColor;
+            },
+            onChange: function (oldPos, newPos) {
+                console.log('Board position changed');
+            }
+        };
+
+        // Socket event handlers
+        socket.emit('joinGame', gameId);
+
+        socket.on('gameJoined', (data) => {
+            console.log('Joined game as', data.color);
+            playerColor = data.color;
+            board.orientation(data.color);
+            board.position(data.position);
+
+            // Apply any existing cooldowns
+            data.cooldowns.forEach(([square, time]) => {
+                if (Date.now() < time) {
+                    pieceCooldowns.set(square, time);
+                    const piece = board.position()[square];
+                    if (piece) {
+                        updateCooldownCircle(piece, square);
+                    }
+                }
+            });
+        });
+
+        socket.on('moveMade', (data) => {
+            board.position(data.position);
+            pieceCooldowns.set(data.cooldown.square, data.cooldown.time);
+            updateCooldownCircle(data.piece, data.cooldown.square);
+        });
+
+        socket.on('boardReset', (data) => {
+            board.position(data.position);
+            pieceCooldowns.clear();
+            $('.cooldown-circle').remove();
+        });
+
+        socket.on('boardCleared', () => {
+            board.clear();
+            pieceCooldowns.clear();
+            $('.cooldown-circle').remove();
+        });
+
+        socket.on('playerDisconnected', (data) => {
+            console.log('Player disconnected, remaining players:', data.remainingPlayers);
+        });
+
+        // Initialize board and UI
+        $(document).ready(function () {
+            board = Chessboard('myBoard', config);
+            updateOverlaySize();
+
+            $('#startBtn').on('click', function () {
+                socket.emit('resetBoard');
+            });
+
+            $('#clearBtn').on('click', function () {
+                socket.emit('clearBoard');
+            });
+
+            $(window).resize(function () {
+                board.resize();
+                updateOverlaySize();
+            });
+        });
+    </script>
+</body>
+
+</html>
