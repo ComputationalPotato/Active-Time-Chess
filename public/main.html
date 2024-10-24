@@ -73,13 +73,6 @@
             onDrop: function (source, target, piece, newPos, oldPos, orientation) {
                 console.log('Attempting move from ' + source + ' to ' + target);
 
-                // Check if it's player's turn based on piece color
-                const pieceColor = piece.charAt(0) === 'w' ? 'white' : 'black';
-                if (pieceColor !== playerColor) {
-                    console.log('Not your turn');
-                    return 'snapback';
-                }
-
                 if (!isLegalMove(source, target, piece, newPos, oldPos)) {
                     console.log('Illegal move attempted');
                     return 'snapback';
