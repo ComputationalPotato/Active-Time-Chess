@@ -49,7 +49,7 @@
 
 
     <script type="module">
-        import { updateCooldownCircle, updateOverlaySize, isLegalMove, isPathBlocked } from './gamelogic.js';
+        import { updateCooldownCircle, updateOverlaySize, isLegalMove, isPathBlocked, afterMove } from './gamelogic.js';
 
         let board = null;
         const COOLDOWN_TIME = 3000;
@@ -78,10 +78,33 @@
                     return 'snapback';
                 }
 
+                // Record the move and check for promotion
+                const promotedPiece = afterMove(source, target, piece, newPos);
+
+                // If there was a promotion, update the position
+                if (promotedPiece) {
+                    newPos[target] = promotedPiece;
+                }
+
+                // Check if this was a castling move
+                if (piece.charAt(1).toLowerCase() === 'k' && Math.abs(target.charCodeAt(0) - source.charCodeAt(0)) === 2) {
+                    // Calculate rook's movement
+                    const rank = source.charAt(1);
+                    const isKingside = target.charAt(0) === 'g';
+                    const oldRookFile = isKingside ? 'h' : 'a';
+                    const newRookFile = isKingside ? 'f' : 'd';
+                    const rookSource = `${oldRookFile}${rank}`;
+                    const rookTarget = `${newRookFile}${rank}`;
+                    
+                    // Update position to include rook movement
+                    newPos[rookTarget] = newPos[rookSource];
+                    delete newPos[rookSource];
+                }
+
                 socket.emit('move', {
                     source,
                     target,
-                    piece,
+                    piece: promotedPiece || piece, // Use promoted piece if available
                     newPosition: newPos
                 });
 

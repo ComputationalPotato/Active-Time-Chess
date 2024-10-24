@@ -68,6 +68,19 @@ export function isPathBlocked(boardState, from, to) {
     return false;
 }
 
+// Track whether pieces have moved
+const pieceMoveHistory = new Map();
+
+// Helper function to check if a piece has moved
+function hasPieceMoved(square, oldPos) {
+    return pieceMoveHistory.has(`${oldPos[square]}-${square}`);
+}
+
+// Helper function to record a piece movement
+function recordPieceMove(piece, square) {
+    pieceMoveHistory.set(`${piece}-${square}`, true);
+}
+
 export function isLegalMove(source, target, piece, newPos, oldPos) {
     // Check cooldown
     if (pieceCooldowns.has(source) && Date.now() < pieceCooldowns.get(source)) {
@@ -93,17 +106,35 @@ export function isLegalMove(source, target, piece, newPos, oldPos) {
     switch (pieceType) {
         case 'p':
             if (color === 'w') {
-                if (colDiff === 0 && !targetPiece) {
-                    if (rowDiff === 1 && rowTo > rowFrom) return true;
-                    if (rowFrom === 2 && rowDiff === 2) return !isPathBlocked(oldPos, source, target);
+                // Capture for white
+                if (colDiff === 1 && rowTo - rowFrom === 1 && targetPiece) {
+                    return true;
                 }
-                return colDiff === 1 && rowDiff === 1 && rowTo > rowFrom && targetPiece;
+                // Forward for white
+                if (colDiff === 0 && !targetPiece) {
+                    // Single square advance
+                    if (rowTo - rowFrom === 1) return true;
+                    // Initial two square advance
+                    if (rowFrom === 2 && rowTo - rowFrom === 2) {
+                        return !isPathBlocked(oldPos, source, target);
+                    }
+                }
+                return false;
             } else {
-                if (colDiff === 0 && !targetPiece) {
-                    if (rowDiff === 1 && rowTo < rowFrom) return true;
-                    if (rowFrom === 7 && rowDiff === 2) return !isPathBlocked(oldPos, source, target);
+                // Capture for black
+                if (colDiff === 1 && rowFrom - rowTo === 1 && targetPiece) {
+                    return true;
                 }
-                return colDiff === 1 && rowDiff === 1 && rowTo < rowFrom && targetPiece;
+                // Forward for black
+                if (colDiff === 0 && !targetPiece) {
+                    // Single square advance
+                    if (rowFrom - rowTo === 1) return true;
+                    // Initial two square advance
+                    if (rowFrom === 7 && rowFrom - rowTo === 2) {
+                        return !isPathBlocked(oldPos, source, target);
+                    }
+                }
+                return false;
             }
         case 'r':
             return (rowDiff === 0 || colDiff === 0) && !isPathBlocked(oldPos, source, target);
@@ -114,12 +145,74 @@ export function isLegalMove(source, target, piece, newPos, oldPos) {
         case 'q':
             return (rowDiff === colDiff || rowDiff === 0 || colDiff === 0) && !isPathBlocked(oldPos, source, target);
         case 'k':
-            return rowDiff <= 1 && colDiff <= 1;
+            // Check for normal king move
+            if (rowDiff <= 1 && colDiff <= 1) return true;
+            
+            // Check for castling
+            if (rowDiff === 0 && colDiff === 2 && !hasPieceMoved(source, oldPos)) {
+                const isKingsideCastling = colTo > colFrom;
+                const rookFile = isKingsideCastling ? 'h' : 'a';
+                const rookRank = rowFrom;
+                const rookSquare = `${rookFile}${rookRank}`;
+                
+                // Check if rook is present and hasn't moved
+                if (!oldPos[rookSquare] || 
+                    oldPos[rookSquare].charAt(1).toLowerCase() !== 'r' ||
+                    hasPieceMoved(rookSquare, oldPos)) {
+                    return false;
+                }
+                
+                // Check if path is clear
+                const kingPath = isKingsideCastling ? 
+                    [`f${rowFrom}`, `g${rowFrom}`] :
+                    [`d${rowFrom}`, `c${rowFrom}`, `b${rowFrom}`];
+                
+                return kingPath.every(square => !oldPos[square]);
+            }
+            return false;
         default:
             return false;
     }
 }
 
+// Check if pawn needs promotion
+function shouldPromotePawn(piece, target) {
+    const pieceType = piece.charAt(1).toLowerCase();
+    const color = piece.charAt(0);
+    const rank = parseInt(target.charAt(1));
+    
+    return pieceType === 'p' && ((color === 'w' && rank === 8) || (color === 'b' && rank === 1));
+}
+
+// After a successful move, call to add to history and handle castling and promotion
+export function afterMove(source, target, piece, position) {  // Add position parameter instead of game
+    recordPieceMove(piece, source);
+    
+    // rook movement during castle
+    if (piece.charAt(1).toLowerCase() === 'k' && Math.abs(target.charCodeAt(0) - source.charCodeAt(0)) === 2) {
+        const isKingside = target.charAt(0) === 'g';
+        const rank = source.charAt(1);
+        const oldRookFile = isKingside ? 'h' : 'a';
+        const newRookFile = isKingside ? 'f' : 'd';
+        const rookPiece = piece.charAt(0) + 'r';
+        recordPieceMove(rookPiece, `${oldRookFile}${rank}`);
+    }
+
+    // Handle pawn promotion
+    if (shouldPromotePawn(piece, target)) {
+        return promotePawn(target, piece.charAt(0));  
+    }
+
+    // Set cooldown after move
+    pieceCooldowns.set(target, Date.now() + COOLDOWN_TIME);
+    return null;  // Return null if no promotion occurred
+}
+
+// provide promotion piece (wq or bq) Add more later if needed
+function promotePawn(square, color) {
+    // Promote to queen
+    return color + 'q';
+}
 
 export function updateOverlaySize() {
     const boardElement = document.querySelector('.board-container');
