@@ -3,7 +3,8 @@
     "boardgame.io": "^0.50.2",
     "chessboardjs": "^0.0.1",
     "express": "^4.21.1",
-    "socket.io": "^4.8.0"
+    "socket.io": "^4.8.0",
+    "socketio": "^1.0.0"
   },
   "name": "active-time-chess",
   "version": "1.0.0",
