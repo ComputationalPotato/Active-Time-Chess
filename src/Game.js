@@ -48,11 +48,15 @@ export const ChessGame = {
       G.cells[id] = playerID;
     },
     move: ({ G, ctx, playerID }, source, target, piece, newPos, oldPos) => {
-      if((source[0]=='b'&&playerID==0)||(source[0]=='w'&&playerID==1))
+      if((Array.from(G.board[source])[0]==='b'&&playerID==0)||(Array.from(G.board[source])[0]==='w'&&playerID==1))
       {
-        console.log('Illegal move attempted');
+        console.log(Array.from(G.board[source])[0]);
+        console.log(playerID);
+        console.log('not your piece');
         return INVALID_MOVE;
       }
+      console.log(Array.from(G.board[source])[0]);
+      console.log(playerID);
       if (!isLegalMove(source, target, piece, null, G.board)) {
         console.log('Illegal move attempted');
         return INVALID_MOVE;

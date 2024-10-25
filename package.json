@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "npm install --save-dev parcel-bundler",
     "start": "parcel index.html --open",
     "serve": "nvm run 18 --experimental-specifier-resolution=node src/server.js"
   },

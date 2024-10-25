@@ -13,12 +13,9 @@ class TicTacToeClient {
     this.rootElement = rootElement;
     this.createBoard();
     this.client.subscribe(state => this.update(state));
-
-    //this.attachListeners();
   }
 
   createBoard() {
-    // Create cells in rows for the Tic-Tac-Toe board.
     var config = {
       draggable: true,
       dropOffBoard: 'snapback', // this is the default
@@ -45,20 +42,11 @@ class TicTacToeClient {
         console.log('Move successful');
         return true;
       },
-      onDragStart: function (source, piece, position, orientation) {
-        return true;
-      },
       onMoveEnd:  (oldPos, newPos)=> {
         this.board.position(this.client.getState().G.board,false);
       }
     }
 
-
-    // Add the HTML to our app <div>.
-    // We’ll use the empty <p> to display the game winner later.
-    /* this.rootElement.innerHTML = `
-      <div id="myBoard" style="width: 400px"></div>
-    `; */
     this.board = new ChessBoard("myBoard", config)
   }
   update(state) {
@@ -68,19 +56,6 @@ class TicTacToeClient {
     }
     this.board.position(state.G.board);
   }
-  /* attachListeners() {
-     // This event handler will read the cell id from a cell’s
-     // `data-id` attribute and make the `clickCell` move.
-     const handleCellClick = event => {
-       const id = parseInt(event.target.dataset.id);
-       this.client.moves.clickCell(id);
-     };
-     // Attach the event listener to each of the board cells.
-     const cells = this.rootElement.querySelectorAll('.cell');
-     cells.forEach(cell => {
-       cell.onclick = handleCellClick;
-     });
-   }*/
 }
 function SplashScreen(rootElement) {
   return new Promise((resolve) => {
@@ -95,8 +70,6 @@ function SplashScreen(rootElement) {
     playerIDs.forEach(createButton);
   });
 }
-//const appElement = document.getElementById('app');
-//const app = new TicTacToeClient(appElement);
 class App {
   constructor(rootElement) {
     this.client = SplashScreen(rootElement).then((playerID) => {
