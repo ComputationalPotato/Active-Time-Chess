@@ -48,7 +48,11 @@ export const ChessGame = {
       G.cells[id] = playerID;
     },
     move: ({ G, ctx, playerID }, source, target, piece, newPos, oldPos) => {
-
+      if((source[0]=='b'&&playerID==0)||(source[0]=='w'&&playerID==1))
+      {
+        console.log('Illegal move attempted');
+        return INVALID_MOVE;
+      }
       if (!isLegalMove(source, target, piece, null, G.board)) {
         console.log('Illegal move attempted');
         return INVALID_MOVE;

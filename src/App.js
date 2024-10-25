@@ -104,6 +104,6 @@ class App {
     });
   }
 }
-
+//todo: replace splash screen with Lobby
 const appElement = document.getElementById('app');
 new App(appElement);
