@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Home Page - ATChess</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f4e6;
+        }
+
+        .main-container {
+            display: flex;
+            max-width: 800px;
+            width: 100%;
+            background-color: #f9f4e6;
+        }
+
+        /* Left Side - Profile and Friends */
+        .left-side {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .profile {
+            text-align: left;
+        }
+
+        .profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .profile h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #000;
+        }
+
+        .elo {
+            font-size: 18px;
+            color: #a0c800;
+            margin-top: 5px;
+        }
+
+        .friends-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f0f8;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #f9f4e6;
+            background-color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            width: 150px;
+        }
+
+        .button:hover {
+            background-color: #555;
+        }
+
+        /* Right Side - Actions */
+        .right-side {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border-left: 2px solid #ccc;
+        }
+
+        .sign-out {
+            align-self: flex-end;
+            background-color: #d9534f;
+            color: #fff;
+            padding: 8px 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .sign-out:hover {
+            background-color: #c9302c;
+        }
+
+        .play-button {
+            background-color: #ffc107;
+            color: #333;
+            font-weight: bold;
+            padding: 12px 24px;
+            margin-bottom: 10px;
+            width: 150px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .play-button:hover {
+            background-color: #e0a800;
+        }
+
+        .right-side .button {
+            background-color: #333;
+            color: #f9f4e6;
+            text-align: center;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Side -->
+        <div class="left-side">
+            <div class="profile">
+                <img src="profile.jpg" alt="Profile Picture">
+                <h2>Diablo the Cheater</h2>
+                <p class="elo">ELO: 000000000</p>
+            </div>
+
+            <div class="friends-list">
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+                <div class="friend-item">Friendname -- Friend ELO -- <span>&gt;</span></div>
+            </div>
+
+            <div class="buttons">
+                <button class="button">Send Friend Request</button>
+                <button class="button">Pending Requests</button>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="right-side">
+            <button class="sign-out">Sign Out</button>
+
+            <button class="play-button">Play Ranked</button>
+            <button class="button">Play Unranked</button>
+            <button class="button">Lobbies</button>
+        </div>
+    </div>
+</body>
+</html>

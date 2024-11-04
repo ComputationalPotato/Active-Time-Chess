@@ -3,24 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATCHESS</title>
+    <title>ATChess</title>
     <style>
         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
+            background-color: #f9f4e6;
         }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #000;
+            margin-bottom: 40px;
+        }
+
         .button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
+            display: block;
+            width: 200px;
+            padding: 15px;
+            margin: 10px auto;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f9f4e6;
+            background-color: #333;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #555;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to ATCHESS</h1>
-    <button class="button" onclick="window.location.href='main.html'">Play Anonymous</button>
-    <button class="button" onclick="window.location.href='login.html'">Login</button>
+    <div class="container">
+        <h1>ATChess</h1>
+        <button class="button" onclick="window.location.href='main.html'">Play Anonymous</button>
+        <button class="button" onclick="window.location.href='login.html'">Log In</button>
+        <button class="button" onclick="window.location.href='signup.html'">Sign up</button>
+    </div>
 </body>
 </html>
