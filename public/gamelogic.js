@@ -23,70 +23,14 @@ function showGameEndMessage(winner) {
     // Create message container
     const messageContainer = document.createElement('div');
     messageContainer.className = 'game-end-message';
-    messageContainer.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(255, 255, 255, 0.95);
-        padding: 2rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        z-index: 1000;
-        animation: fadeIn 0.5s ease-out;
-    `;
 
     // Create message content
     const messageContent = document.createElement('div');
     messageContent.innerHTML = `
-        <h2 style="
-            color: #2d3748;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        ">Game Over!</h2>
-        <p style="
-            color: #4a5568;
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-        ">${winner} wins by capturing the king!</p>
-        <button onclick="location.reload()" style="
-            background: #4299e1;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        ">Play Again</button>
+        <h2>Game Over!</h2>
+        <p>${winner} wins by capturing the king!</p>
+        <button onclick="location.reload()">Play Again</button>
     `;
-
-    // Add hover effect to button
-    const button = messageContent.querySelector('button');
-    button.addEventListener('mouseover', () => {
-        button.style.background = '#3182ce';
-    });
-    button.addEventListener('mouseout', () => {
-        button.style.background = '#4299e1';
-    });
-
-    // Add animation styles
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -60%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
-        }
-    `;
-    document.head.appendChild(style);
 
     // Add message to page
     messageContainer.appendChild(messageContent);
