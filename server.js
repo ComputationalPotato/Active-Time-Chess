@@ -6,7 +6,7 @@ const path = require('path');
 app.use(express.static('public'));
 app.use('/chessboardjs', express.static(path.join(__dirname, 'node_modules', 'chessboardjs', 'www')));
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'main.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Game state storage
