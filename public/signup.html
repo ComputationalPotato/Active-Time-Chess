@@ -45,7 +45,7 @@
             color: #ffffff; /* Placeholder color */
         }
 
-        .button {
+        button {
             display: inline-block;
             width: 100px;
             padding: 10px;
@@ -96,7 +96,9 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="type password again" required>
             </div>
-            <button type="submit" class="button">Login</button>
+            <button type="submit"
+            onclick="createAccount(document.getElementById('username').value, document.getElementById('password').value);"
+            >Login</button>
         </form>
     </div>
 </body>

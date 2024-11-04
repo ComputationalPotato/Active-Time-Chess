@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ATChess</title>
+    <script defer src="database.js"></script>
     <style>
         body {
             display: flex;
@@ -45,7 +46,7 @@
             color: #ffffff; /* Placeholder color */
         }
 
-        .button {
+        button {
             display: inline-block;
             width: 100px;
             padding: 10px;
@@ -89,8 +90,10 @@
         <input type="password" id="password" placeholder="Enter Password">
 
         <div>
-            <button class="button">Login</button>
-            <button class="button">Back</button>
+            <button id="loginConfirm" 
+            onclick="trylogin(document.getElementById('username').value, document.getElementById('password').value);"
+            >Login</button>
+            <a href = "/public/index.html"><button>Back</button></a>
         </div>
 
         <div class="create-account">
