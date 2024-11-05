@@ -13,8 +13,11 @@ const app = express();
 const http = createServer(app);
 const io = new Server(http);
 const { Pool } = pg;
-const pool = new Pool();
-
+const pool = new Pool({
+    host: 'localhost',  // Or your PostgreSQL server's address
+    database: 'atchess',  // Replace with your database name
+    // Leave out user and password to use peer authentication
+});
 // Add body parser middleware
 app.use(express.json());
 app.use(express.static('public'));
