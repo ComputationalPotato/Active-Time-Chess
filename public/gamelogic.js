@@ -14,6 +14,8 @@ const COOLDOWN_TIMES = {
     'k': 4000   // Kings
 };
 export function showGameEndMessage(winner, method = "capture") {
+    console.log('Initiated Game Ending');
+    
     const existingMessage = document.querySelector('.game-end-message');
     if (existingMessage) existingMessage.remove();
 

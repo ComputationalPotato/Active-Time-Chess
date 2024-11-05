@@ -8,6 +8,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
 </head>
+<div id="drawModal" class="modal">
+    <div class="modal-content">
+        <h2>Draw Request</h2>
+        <p>Your opponent has requested a draw. Do you accept?</p>
+        <button id="acceptDraw">Yes</button>
+        <button id="declineDraw">No</button>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        background: white;
+        text-align: center;
+    }
+</style>
 
 <body>
     <div class="board-container">
@@ -167,23 +195,35 @@
             });
 
             $('#drawBtn').on('click', function () {
-                console.log('Requesting draw');
-                socket.emit('requestDraw');
-            });
+    console.log('Requesting draw');
+    socket.emit('requestDraw');
+    });
 
-            socket.on('drawRequest', () => {
-                console.log('Draw request received');
-                if (confirm("Your opponent has requested a draw. Do you accept?")) {
-                    socket.emit('acceptDraw');
-                } else {
-                    socket.emit('declineDraw');
-                }
-            });
+        // Show modal when a draw request is received
+        socket.on('drawRequest', () => {
+            $('#drawModal').show();
+        });
 
-            socket.on('drawAccepted', () => {
-                console.log('Draw accepted, ending game');
-                showGameEndMessage("Draw", "draw");
-            });
+        // Handle the response buttons in the modal
+        $('#acceptDraw').on('click', function () {
+            $('#drawModal').hide();  
+            socket.emit('acceptDraw');  
+        });
+        $('#declineDraw').on('click', function () {
+            $('#drawModal').hide();
+            socket.emit('declineDraw');
+        });
+
+        // Handle accepted and declined draw responses
+        socket.on('drawAccepted', () => {
+            console.log('Draw accepted, ending game');
+            showGameEndMessage("Draw", "draw");
+        });
+
+        socket.on('drawDeclined', () => {
+            console.log('Draw declined');
+            alert("Your draw request was declined.");
+        });
 
 
             $(window).resize(function () {
