@@ -18,7 +18,7 @@ async function trylogin(username, password) {
             // Store user info in session/localStorage if needed
             localStorage.setItem('userId', data.userId);
             // Redirect to game page or dashboard
-            window.location.href = '/public/game.html';
+            window.location.href = '/main.html';
         } else {
             alert('Invalid username or password');
         }
