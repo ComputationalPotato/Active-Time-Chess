@@ -232,6 +232,38 @@ async function tryLogin(username, password) {
     }
 }
 
+async function incWins(userid) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'UPDATE users SET wins = wins + 1 WHERE userid = $1';
+        const res = await client.query(queryText, [userid]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+async function incLosses(userid) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'UPDATE users SET losses = losses + 1 WHERE userid = $1';
+        const res = await client.query(queryText, [userid]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
