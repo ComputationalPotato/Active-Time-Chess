@@ -14,7 +14,7 @@ const http = createServer(app);
 const io = new Server(http);
 const { Pool } = pg;
 const pool = new Pool({
-    host: 'localhost',  // Or your PostgreSQL server's address
+    // comment out so it uses unix sockets host: 'localhost',  // Or your PostgreSQL server's address
     database: 'atchess',  // Replace with your database name
     // Leave out user and password to use peer authentication
 });
