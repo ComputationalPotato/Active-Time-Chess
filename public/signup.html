@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title>Create Account - ATChess</title>
     <style>
         body {
             display: flex;
@@ -19,6 +19,14 @@
             text-align: center;
             max-width: 300px;
             width: 100%;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
         }
 
         label {
@@ -26,28 +34,29 @@
             margin: 10px 0 5px;
             font-size: 16px;
             color: #000;
+            text-align: left;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #f0f0f0; /* Change this to your desired color */
-            color: #333; /* Text color */
+            background-color: white;
+            color: #333;
+            box-sizing: border-box;
         }
 
         input[type="text"]::placeholder,
         input[type="password"]::placeholder {
-            color: #ffffff; /* Placeholder color */
+            color: #999;
         }
 
         button {
             display: inline-block;
-            width: 100px;
+            width: 120px;
             padding: 10px;
             margin: 5px;
             font-size: 16px;
@@ -58,48 +67,164 @@
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
+            transition: background-color 0.2s;
         }
 
-        .button:hover {
+        button:hover {
             background-color: #555;
         }
 
-        .create-account {
+        #error-message {
+            color: #ff0000;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            margin: 10px 0;
+        }
+
+        .loading::after {
+            content: "...";
+            animation: dots 1s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+
+        .login-link {
             margin-top: 20px;
             font-size: 16px;
         }
 
-        .create-account a {
-            color: #00a;
+        .login-link a {
+            color: #0066cc;
             text-decoration: none;
             font-weight: bold;
+            cursor: pointer;
         }
 
-        .create-account a:hover {
+        .login-link a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form>
+    <div class="container">
+        <h2>Create Account</h2>
+        
+        <div id="error-message"></div>
+        
+        <form id="signupForm" onsubmit="handleSignup(event)">
             <div class="input-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[a-zA-Z0-9_-]+"
+                    title="Username must be between 3-20 characters and can only contain letters, numbers, underscores, and hyphens"
+                >
             </div>
+            
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required
+                    autocomplete="new-password"
+                    minlength="8"
+                >
             </div>
+            
             <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="type password again" required>
+                <label for="confirm-password">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirm-password" 
+                    name="confirm-password" 
+                    required
+                    autocomplete="new-password"
+                >
             </div>
-            <button type="submit"
-            onclick="createAccount(document.getElementById('username').value, document.getElementById('password').value);"
-            >Login</button>
+
+            <div>
+                <button type="submit">Create Account</button>
+                <a href="/index.html"><button type="button">Back</button></a>
+            </div>
+            
+            <div class="loading" id="loading">Creating account</div>
         </form>
+        
+        <div class="login-link">
+            <p>Already have an account? <a href="login.html">Login here</a></p>
+        </div>
     </div>
+
+    <script>
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorDiv = document.getElementById('error-message');
+            const loadingDiv = document.getElementById('loading');
+            const form = document.getElementById('signupForm');
+            
+            // Reset error message
+            errorDiv.style.display = 'none';
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading indicator
+            loadingDiv.style.display = 'block';
+            form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const response = await fetch('/api/create-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to login page
+                    window.location.href = 'login.html';
+                } else {
+                    errorDiv.textContent = data.message;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+                form.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+    </script>
 </body>
 </html>
