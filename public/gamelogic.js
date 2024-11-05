@@ -216,27 +216,30 @@ export function isLegalMove(source, target, piece, newPos, oldPos) {
         case 'q':
             return (rowDiff === colDiff || rowDiff === 0 || colDiff === 0) && !isPathBlocked(oldPos, source, target);
         case 'k':
+            // Regular king move (one square in any direction)
             if (rowDiff <= 1 && colDiff <= 1) return true;
             
+            // Castling logic
             if (rowDiff === 0 && colDiff === 2 && !hasPieceMoved(source, oldPos)) {
                 const isKingsideCastling = colTo > colFrom;
                 const rookFile = isKingsideCastling ? 'h' : 'a';
                 const rookRank = rowFrom;
                 const rookSquare = `${rookFile}${rookRank}`;
-                
-                if (!oldPos[rookSquare] || 
+        
+                if (!oldPos[rookSquare] ||
                     oldPos[rookSquare].charAt(1).toLowerCase() !== 'r' ||
                     hasPieceMoved(rookSquare, oldPos)) {
                     return false;
                 }
-                
-                const kingPath = isKingsideCastling ? 
+        
+                const kingPath = isKingsideCastling ?
                     [`f${rowFrom}`, `g${rowFrom}`] :
                     [`d${rowFrom}`, `c${rowFrom}`, `b${rowFrom}`];
-                
+        
                 return kingPath.every(square => !oldPos[square]);
             }
             return false;
+            
         default:
             return false;
     }
@@ -255,8 +258,8 @@ function shouldPromotePawn(piece, target) {
 export function afterMove(source, target, piece, position) {
     recordPieceMove(piece, source);
     
-    // Check for king capture
-    if (position[target] && position[target].toLowerCase().includes('k')) {
+    // Check for king capture only if there's a piece on the target square that differs in color
+    if (position[target] && position[target].charAt(0) !== piece.charAt(0)) {
         checkForKingCapture(target, position);
     }
     
