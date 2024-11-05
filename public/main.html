@@ -17,6 +17,7 @@
     <div class="button-container">
         <button id="startBtn">Start Position</button>
         <button id="clearBtn">Clear Board</button>
+        <button id="resignBtn">Resign</button> 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -24,7 +25,7 @@
 
 
     <script type="module">
-        import { updateCooldownCircle, updateOverlaySize, isLegalMove, isPathBlocked, afterMove } from './gamelogic.js';
+        import { updateCooldownCircle, updateOverlaySize, isLegalMove, isPathBlocked, afterMove, showGameEndMessage } from './gamelogic.js';
 
         let board = null;
         const COOLDOWN_TIME = 3000;
@@ -143,6 +144,9 @@
         socket.on('playerDisconnected', (data) => {
             console.log('Player disconnected, remaining players:', data.remainingPlayers);
         });
+        socket.on('gameOver', (data) => {
+            showGameEndMessage(data.winner, "resign");
+        });
 
         // Initialize board and UI
         $(document).ready(function () {
@@ -157,11 +161,16 @@
                 socket.emit('clearBoard');
             });
 
+            $('#resignBtn').on('click', function () {
+                socket.emit('resign'); // Emit a resign event to the server
+            });
+
             $(window).resize(function () {
                 board.resize();
                 updateOverlaySize();
             });
         });
+
     </script>
 </body>
 

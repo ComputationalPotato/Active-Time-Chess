@@ -13,7 +13,7 @@ const COOLDOWN_TIMES = {
     'q': 5000,  // Queens
     'k': 4000   // Kings
 };
-function showGameEndMessage(winner) {
+export function showGameEndMessage(winner, method = "capture") {
     // Remove existing message if there is one
     const existingMessage = document.querySelector('.game-end-message');
     if (existingMessage) {
@@ -26,11 +26,21 @@ function showGameEndMessage(winner) {
 
     // Create message content
     const messageContent = document.createElement('div');
+
     messageContent.innerHTML = `
         <h2>Game Over!</h2>
         <p>${winner} wins by capturing the king!</p>
         <button onclick="location.reload()">Play Again</button>
     `;
+
+    if (method == "resign"){
+        messageContent.innerHTML = `
+        <h2>Game Over!</h2>
+        <p>${winner} wins by resignation!</p>
+        <button onclick="location.reload()">Play Again</button>
+    `;
+    }
+    
 
     // Add message to page
     messageContainer.appendChild(messageContent);

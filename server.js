@@ -171,6 +171,21 @@ io.on('connection', (socket) => {
         io.to(gameId).emit('boardCleared');
     });
 
+    socket.on('resign', () => {
+        const gameId = playerGames.get(socket.id);
+        if (!gameId) return;
+    
+        const game = games.get(gameId);
+        if (!game) return;
+    
+        const playerColor = game.getPlayerColor(socket.id);
+        const winner = playerColor === 'white' ? 'Black' : 'White';
+    
+        // Emit a game over event to declare the winner
+        io.to(gameId).emit('gameOver', { winner });
+    });
+    
+
     socket.on('disconnect', () => {
         const gameId = playerGames.get(socket.id);
         if (gameId) {
