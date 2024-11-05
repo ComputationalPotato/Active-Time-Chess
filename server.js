@@ -247,6 +247,61 @@ async function tryLogin(username, password) {
     }
 }
 
+async function incWins(userid) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'UPDATE users SET wins = wins + 1 WHERE userid = $1';
+        const res = await client.query(queryText, [userid]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+async function incLosses(userid) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'UPDATE users SET losses = losses + 1 WHERE userid = $1';
+        const res = await client.query(queryText, [userid]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+async function getWinLoss(userid) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT wins, losses FROM users WHERE userid = $1';
+            const res = await client.query(queryText, [userId]);
+        
+            if (res.rows.length > 0) {
+              const { wins, losses } = res.rows[0];
+              console.log(`User ${userId} - Wins: ${wins}, Losses: ${losses}`);
+              return { wins, losses };
+            } else {
+              console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -288,6 +343,59 @@ app.post('/api/create-account', async (req, res) => {
         });
     } catch (error) {
         console.error('Account creation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/incWins', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const success = await incWins(userId);
+        
+        res.json({
+            success: success,
+            message: success ? 'win inced' : 'win not inced'
+        });
+    } catch (error) {
+        console.error('win count inc error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/incLosses', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const success = await incLosses(userId);
+        
+        res.json({
+            success: success,
+            message: success ? 'loss inced' : 'loss not inced'
+        });
+    } catch (error) {
+        console.error('loss count inc error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/getWinLoss', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const {wins, losses} = await getWinLoss(userId);
+        
+        res.json({
+            wins: wins,
+            losses: losses
+        });
+    } catch (error) {
+        console.error('getwinloss error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error occurred'
