@@ -113,6 +113,23 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('requestDraw', () => {
+        console.log('Draw request received from:', socket.id);  // Add this line
+        const gameId = playerGames.get(socket.id);
+        if (!gameId) return;
+    
+        const game = games.get(gameId);
+        if (!game) return;
+    
+        // Find opponent socket
+        const opponentSocketId = game.players.find(id => id !== socket.id);
+        if (opponentSocketId) {
+            io.to(opponentSocketId).emit('drawRequest');
+            console.log('Draw request sent to opponent:', opponentSocketId);  // Add this line
+        }
+    });
+    
+
     socket.on('move', (data) => {
         const gameId = playerGames.get(socket.id);
         if (!gameId) return;
@@ -184,6 +201,7 @@ io.on('connection', (socket) => {
         // Emit a game over event to declare the winner
         io.to(gameId).emit('gameOver', { winner });
     });
+    
     
 
     socket.on('disconnect', () => {

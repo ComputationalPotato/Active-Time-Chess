@@ -14,33 +14,33 @@ const COOLDOWN_TIMES = {
     'k': 4000   // Kings
 };
 export function showGameEndMessage(winner, method = "capture") {
-    // Remove existing message if there is one
     const existingMessage = document.querySelector('.game-end-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
+    if (existingMessage) existingMessage.remove();
 
-    // Create message container
     const messageContainer = document.createElement('div');
     messageContainer.className = 'game-end-message';
 
-    // Create message content
     const messageContent = document.createElement('div');
-
-    messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by capturing the king!</p>
-        <button onclick="location.reload()">Play Again</button>
-    `;
-
-    if (method == "resign"){
+    if (method === "draw") {
         messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by resignation!</p>
-        <button onclick="location.reload()">Play Again</button>
-    `;
+            <h2>Game Over!</h2>
+            <p>The game ended in a draw.</p>
+            <button onclick="location.reload()">Play Again</button>
+        `;
+    } else if (method === "resign") {
+        messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by resignation!</p>
+            <button onclick="location.reload()">Play Again</button>
+        `;
+    } else {
+        messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by capturing the king!</p>
+            <button onclick="location.reload()">Play Again</button>
+        `;
     }
-    
+
 
     // Add message to page
     messageContainer.appendChild(messageContent);

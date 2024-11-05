@@ -18,6 +18,7 @@
         <button id="startBtn">Start Position</button>
         <button id="clearBtn">Clear Board</button>
         <button id="resignBtn">Resign</button> 
+        <button id="drawBtn">Request Draw</button>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -162,8 +163,28 @@
             });
 
             $('#resignBtn').on('click', function () {
-                socket.emit('resign'); // Emit a resign event to the server
+                socket.emit('resign'); 
             });
+
+            $('#drawBtn').on('click', function () {
+                console.log('Requesting draw');
+                socket.emit('requestDraw');
+            });
+
+            socket.on('drawRequest', () => {
+                console.log('Draw request received');
+                if (confirm("Your opponent has requested a draw. Do you accept?")) {
+                    socket.emit('acceptDraw');
+                } else {
+                    socket.emit('declineDraw');
+                }
+            });
+
+            socket.on('drawAccepted', () => {
+                console.log('Draw accepted, ending game');
+                showGameEndMessage("Draw", "draw");
+            });
+
 
             $(window).resize(function () {
                 board.resize();
