@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ATChess</title>
+    <script defer src="database.js"></script>
     <style>
         body {
             display: flex;
@@ -14,25 +15,20 @@
             font-family: Arial, sans-serif;
             background-color: #f9f4e6;
         }
-        
+
         .container {
             text-align: center;
             max-width: 300px;
             width: 100%;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         label {
             display: block;
             margin: 10px 0 5px;
             font-size: 16px;
             color: #000;
-            text-align: left;
         }
-        
+
         input[type="text"],
         input[type="password"] {
             width: 100%;
@@ -41,16 +37,15 @@
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: white;
-            color: #333;
-            box-sizing: border-box;
+            background-color: #f0f0f0; /* Change this to your desired color */
+            color: #333; /* Text color */
         }
-        
+
         input[type="text"]::placeholder,
         input[type="password"]::placeholder {
-            color: #999;
+            color: #ffffff; /* Placeholder color */
         }
-        
+
         button {
             display: inline-block;
             width: 100px;
@@ -64,47 +59,23 @@
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.2s;
         }
-        
-        button:hover {
+
+        .button:hover {
             background-color: #555;
         }
-        
-        #error-message {
-            color: #ff0000;
-            margin-bottom: 10px;
-            display: none;
-        }
-        
-        .loading {
-            display: none;
-            margin: 10px 0;
-        }
-        
-        .loading::after {
-            content: "...";
-            animation: dots 1s steps(5, end) infinite;
-        }
-        
-        @keyframes dots {
-            0%, 20% { content: "."; }
-            40% { content: ".."; }
-            60%, 100% { content: "..."; }
-        }
-        
+
         .create-account {
             margin-top: 20px;
             font-size: 16px;
         }
-        
+
         .create-account a {
-            color: #0066cc;
+            color: #00a;
             text-decoration: none;
             font-weight: bold;
-            cursor: pointer;
         }
-        
+
         .create-account a:hover {
             text-decoration: underline;
         }
@@ -112,77 +83,22 @@
 </head>
 <body>
     <div class="container">
-        <h2>Login to ATChess</h2>
-        
-        <div id="error-message"></div>
-        
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <label for="username">Username</label>
-            <input 
-                type="text" 
-                id="username" 
-                placeholder="Enter Username"
-                required
-                autocomplete="username"
-            >
-            
-            <label for="password">Password</label>
-            <input 
-                type="password" 
-                id="password" 
-                placeholder="Enter Password"
-                required
-                autocomplete="current-password"
-            >
-            
-            <div>
-                <button type="submit">Login</button>
-                <a href="/index.html"><button type="button">Back</button></a>
-            </div>
-            
-            <div class="loading" id="loading">Logging in</div>
-        </form>
-        
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter Username">
+
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter Password">
+
+        <div>
+            <button id="loginConfirm" 
+            onclick="trylogin(document.getElementById('username').value, document.getElementById('password').value);"
+            >Login</button>
+            <a href = "/public/index.html"><button>Back</button></a>
+        </div>
+
         <div class="create-account">
-            <p>New Player? <a href="signup.html">Create an account</a></p>
+            <p>New Player? <a onclick="window.location.href='signup.html'">Create an account</a></p>
         </div>
     </div>
-
-    <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-            const loadingDiv = document.getElementById('loading');
-            const form = document.getElementById('loginForm');
-            
-            // Reset error message
-            errorDiv.style.display = 'none';
-            
-            // Show loading indicator
-            loadingDiv.style.display = 'block';
-            form.querySelectorAll('button').forEach(btn => btn.disabled = true);
-            
-            try {
-                const result = await trylogin(username, password);
-                
-                if (result) {
-                    window.location.href = '/public/game.html';
-                } else {
-                    errorDiv.textContent = 'Invalid username or password';
-                    errorDiv.style.display = 'block';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
-            } finally {
-                loadingDiv.style.display = 'none';
-                form.querySelectorAll('button').forEach(btn => btn.disabled = false);
-            }
-        }
-    </script>
-    <script src="database.js"></script>
 </body>
 </html>

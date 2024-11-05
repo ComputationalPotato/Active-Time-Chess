@@ -1,31 +1,20 @@
-import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import pg from 'pg';
-import { createHash } from 'crypto';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+const express = require('express');
 const app = express();
-const http = createServer(app);
-const io = new Server(http);
-const { Pool } = pg;
-const pool = new Pool();
-
-// Add body parser middleware
-app.use(express.json());
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const path = require('path'); 
 app.use(express.static('public'));
 app.use('/chessboardjs', express.static(path.join(__dirname, 'node_modules', 'chessboardjs', 'www')));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Game state storage
 const games = new Map();
 const playerGames = new Map();
 
 // Constants
-const COOLDOWN_TIME = 3000; // 3 seconds to match client // 3 seconds to match client
+const COOLDOWN_TIME = 3000; // 3 seconds to match client
 
 class Game {
     constructor(id) {
@@ -189,92 +178,6 @@ io.on('connection', (socket) => {
             playerGames.delete(socket.id);
         }
     });
-});
-
-
-// Authentication functions
-async function createAccount(username, password) {
-    let client = await pool.connect();
-    try {
-        const hash = createHash('sha256');
-        hash.update(password);
-        await client.query('BEGIN');
-        const queryText = 'SELECT public.createaccount($1,$2)';
-        const res = await client.query(queryText, [username, hash.digest('hex')]);
-        await client.query('COMMIT');
-        return res.rows[0].createaccount;
-    } catch (e) {
-        await client.query('ROLLBACK');
-        throw e;
-    } finally {
-        client.release();
-    }
-}
-
-async function tryLogin(username, password) {
-    let client = await pool.connect();
-    try {
-        const hash = createHash('sha256');
-        hash.update(password);
-        await client.query('BEGIN');
-        const queryText = 'SELECT public.trylogin($1,$2)';
-        const res = await client.query(queryText, [username, hash.digest('hex')]);
-        await client.query('COMMIT');
-        return res.rows[0].trylogin;
-    } catch (e) {
-        await client.query('ROLLBACK');
-        throw e;
-    } finally {
-        client.release();
-    }
-}
-
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.post('/api/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const userId = await tryLogin(username, password);
-        
-        if (userId) {
-            res.json({
-                success: true,
-                userId: userId
-            });
-        } else {
-            res.json({
-                success: false,
-                message: 'Invalid username or password'
-            });
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error occurred'
-        });
-    }
-});
-
-app.post('/api/create-account', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const success = await createAccount(username, password);
-        
-        res.json({
-            success: success,
-            message: success ? 'Account created successfully' : 'Username already exists'
-        });
-    } catch (error) {
-        console.error('Account creation error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error occurred'
-        });
-    }
 });
 
 const PORT = process.env.PORT || 3000;
