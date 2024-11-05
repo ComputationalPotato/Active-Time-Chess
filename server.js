@@ -264,6 +264,29 @@ async function incLosses(userid) {
     }
 }
 
+async function getWinLoss(userid) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT wins, losses FROM users WHERE userid = $1';
+            const res = await client.query(queryText, [userId]);
+        
+            if (res.rows.length > 0) {
+              const { wins, losses } = res.rows[0];
+              console.log(`User ${userId} - Wins: ${wins}, Losses: ${losses}`);
+              return { wins, losses };
+            } else {
+              console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
