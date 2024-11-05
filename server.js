@@ -335,6 +335,59 @@ app.post('/api/create-account', async (req, res) => {
     }
 });
 
+app.post('/api/incWins', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const success = await incWins(userId);
+        
+        res.json({
+            success: success,
+            message: success ? 'win inced' : 'win not inced'
+        });
+    } catch (error) {
+        console.error('win count inc error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/incLosses', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const success = await incLosses(userId);
+        
+        res.json({
+            success: success,
+            message: success ? 'loss inced' : 'loss not inced'
+        });
+    } catch (error) {
+        console.error('loss count inc error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/getWinLoss', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const {wins, losses} = await getWinLoss(userId);
+        
+        res.json({
+            wins: wins,
+            losses: losses
+        });
+    } catch (error) {
+        console.error('getwinloss error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
