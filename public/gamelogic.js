@@ -257,7 +257,7 @@ export function afterMove(source, target, piece, position) {
     
     // Check for king capture
     if (position[target] && position[target].toLowerCase().includes('k')) {
-        checkKingCapture(target, position);
+        checkForKingCapture(target, position);
     }
     
     // Handle castling
