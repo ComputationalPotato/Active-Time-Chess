@@ -1,47 +1,29 @@
-import pg from 'pg'
-const { Pool } = pg
-const pool = new Pool()
-
-const {
-    createHash,
-} = await import('node:crypto');
-
-
-//returns true if account was created, false if username already existed, errors if it errors
-export async function createAccount(username, password) {
-    let client = await pool.connect();
+// database.js
+async function trylogin(username, password) {
     try {
-        let hash = createHash('sha256');
-        hash.update(password);
-        await client.query('BEGIN')
-        queryText = 'SELECT public.createaccount($1,$2)';
-        res = await client.query(queryText, [username,hash.digest('hex')]);
-        await client.query('COMMIT');
-        return res.rows[0][0];
-    } catch (e) {
-        await client.query('ROLLBACK');
-        throw e;
-    } finally {
-        client.release();
-    }
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
 
-}
-//returns user id if login successful, returns false if not
-export async function tryLogin(username, password) {
-    let client = await pool.connect();
-    try {
-        let hash = createHash('sha256');
-        hash.update(password);
-        await client.query('BEGIN')
-        queryText = 'SELECT public.trylogin($1,$2)';
-        res = await client.query(queryText, [username,hash.digest('hex')]);
-        await client.query('COMMIT');
-        return res.rows[0][0];
-    } catch (e) {
-        await client.query('ROLLBACK');
-        throw e;
-    } finally {
-        client.release();
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store user info in session/localStorage if needed
+            localStorage.setItem('userId', data.userId);
+            // Redirect to game page or dashboard
+            window.location.href = '/public/game.html';
+        } else {
+            alert('Invalid username or password');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login');
     }
-
 }
