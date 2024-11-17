@@ -78,6 +78,23 @@ class Game {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
+    socket.on('lfg', (callback) => {
+        console.log("got lfg");
+        for(let [id,g] of games.entries()) 
+        {
+            console.log(g)
+            console.log(g.players.length)
+            if(g.players.length<2)
+            {
+                console.log('found open game');
+                callback({gameId:id});
+                return;
+            }
+        }
+        console.log("sent back new game");
+        callback({gameId:Math.random().toString(36).substring(7)});
+    });
+
     socket.on('joinGame', (gameId) => {
         // Create or join game
         if (!games.has(gameId)) {

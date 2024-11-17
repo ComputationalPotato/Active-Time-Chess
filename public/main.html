@@ -28,6 +28,7 @@
         height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
     }
+
     .modal-content {
         margin: 15% auto;
         padding: 20px;
@@ -45,7 +46,7 @@
     <div class="button-container">
         <button id="startBtn">Start Position</button>
         <button id="clearBtn">Clear Board</button>
-        <button id="resignBtn">Resign</button> 
+        <button id="resignBtn">Resign</button>
         <button id="drawBtn">Request Draw</button>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -62,15 +63,6 @@
         let squareSize = 0;
         let playerColor = 'white'; // Default color
 
-        // Initialize Socket.IO
-        const socket = io();
-        const gameId = new URLSearchParams(window.location.search).get('game') ||
-            Math.random().toString(36).substring(7);
-
-        // Add game ID to URL without reloading
-        if (!window.location.search.includes('game=')) {
-            window.history.pushState({}, '', `?game=${gameId}`);
-        }
 
         var config = {
             draggable: true,
@@ -100,7 +92,7 @@
                     const newRookFile = isKingside ? 'f' : 'd';
                     const rookSource = `${oldRookFile}${rank}`;
                     const rookTarget = `${newRookFile}${rank}`;
-                    
+
                     // Update position to include rook movement
                     newPos[rookTarget] = newPos[rookSource];
                     delete newPos[rookSource];
@@ -130,9 +122,34 @@
                 console.log('Board position changed');
             }
         };
+        //this needs to be at the start to prevent race condition
+        board = Chessboard('myBoard', config);
+
+        // Initialize Socket.IO
+        const socket = io();
+        let gameId = new URLSearchParams(window.location.search).get('game');
+        if (!gameId) {
+            try {
+                let response = await socket.timeout(10000).emitWithAck('lfg');
+                gameId=response.gameId;
+                console.log("got resp to lfg")
+            } catch (e) {
+                // the server did not acknowledge the event in the given delay
+                console.log(e)
+                console.log("aaaaaaaaaaaaaaaaa")
+            }
+        }
+        
+        socket.emit('joinGame', gameId);
+        
+        // Add game ID to URL without reloading
+        if (!window.location.search.includes('game=')) {
+            window.history.pushState({}, '', `?game=${gameId}`);
+        }
+
 
         // Socket event handlers
-        socket.emit('joinGame', gameId);
+
 
         socket.on('gameJoined', (data) => {
             console.log('Joined game as', data.color);
@@ -179,7 +196,6 @@
 
         // Initialize board and UI
         $(document).ready(function () {
-            board = Chessboard('myBoard', config);
             updateOverlaySize();
 
             $('#startBtn').on('click', function () {
@@ -191,39 +207,39 @@
             });
 
             $('#resignBtn').on('click', function () {
-                socket.emit('resign'); 
+                socket.emit('resign');
             });
 
             $('#drawBtn').on('click', function () {
-    console.log('Requesting draw');
-    socket.emit('requestDraw');
-    });
+                console.log('Requesting draw');
+                socket.emit('requestDraw');
+            });
 
-        // Show modal when a draw request is received
-        socket.on('drawRequest', () => {
-            $('#drawModal').show();
-        });
+            // Show modal when a draw request is received
+            socket.on('drawRequest', () => {
+                $('#drawModal').show();
+            });
 
-        // Handle the response buttons in the modal
-        $('#acceptDraw').on('click', function () {
-            $('#drawModal').hide();  
-            socket.emit('acceptDraw');  
-        });
-        $('#declineDraw').on('click', function () {
-            $('#drawModal').hide();
-            socket.emit('declineDraw');
-        });
+            // Handle the response buttons in the modal
+            $('#acceptDraw').on('click', function () {
+                $('#drawModal').hide();
+                socket.emit('acceptDraw');
+            });
+            $('#declineDraw').on('click', function () {
+                $('#drawModal').hide();
+                socket.emit('declineDraw');
+            });
 
-        // Handle accepted and declined draw responses
-        socket.on('drawAccepted', () => {
-            console.log('Draw accepted, ending game');
-            showGameEndMessage("Draw", "draw");
-        });
+            // Handle accepted and declined draw responses
+            socket.on('drawAccepted', () => {
+                console.log('Draw accepted, ending game');
+                showGameEndMessage("Draw", "draw");
+            });
 
-        socket.on('drawDeclined', () => {
-            console.log('Draw declined');
-            alert("Your draw request was declined.");
-        });
+            socket.on('drawDeclined', () => {
+                console.log('Draw declined');
+                alert("Your draw request was declined.");
+            });
 
 
             $(window).resize(function () {
