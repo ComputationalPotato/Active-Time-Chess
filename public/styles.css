@@ -36,6 +36,10 @@ button {
     transition: background-color 0.2s;
 }
 
+.buttons {
+    margin-top: 20px;
+}
+
 button:hover {
     background-color: #555;
 }
@@ -106,6 +110,29 @@ button:focus {
     display: none;
 }
 
+.elo {
+    font-size: 18px;
+    color: #a0c800;
+    margin-top: 5px;
+}
+
+.friends-list {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f5f0f8;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.friend-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+}
+
 .game-end-message {
     position: fixed;
     top: 50%;
@@ -155,9 +182,17 @@ input[type="password"] {
     color: #333;
     box-sizing: border-box;
 }
+
 input[type="text"]::placeholder,
+
 input[type="password"]::placeholder {
     color: #999;
+}
+
+/* Left Side - Profile and Friends */
+.left-side {
+    flex: 1;
+    padding: 20px;
 }
 
 .loading {
@@ -194,6 +229,13 @@ label {
     text-align: left;
 }
 
+.main-container {
+    display: flex;
+    max-width: 800px;
+    width: 100%;
+    background-color: #f9f4e6;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -211,6 +253,70 @@ label {
     width: 80%;
     background: white;
     text-align: center;
+}
+
+.play-button {
+    background-color: #ffc107;
+    color: #333;
+    font-weight: bold;
+    padding: 12px 24px;
+    margin-bottom: 10px;
+    width: 150px;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.play-button:hover {
+    background-color: #e0a800;
+}
+
+.profile {
+    text-align: left;
+}
+
+.profile img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #000;
+}
+
+.right-side {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border-left: 2px solid #ccc;
+}
+
+.right-side .button {
+    background-color: #333;
+    color: #f9f4e6;
+    text-align: center;
+    width: 150px;
+}
+
+.sign-out {
+    align-self: flex-end;
+    background-color: #d9534f;
+    color: #fff;
+    padding: 8px 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.sign-out:hover {
+    background-color: #c9302c;
 }
 
 @keyframes fadeIn {
