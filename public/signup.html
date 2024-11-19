@@ -171,6 +171,7 @@
         </div>
     </div>
 
+    <script src="accounts.js"></script>
     <script>
         async function handleSignup(event) {
             event.preventDefault();
@@ -191,8 +192,9 @@
                 errorDiv.style.display = 'block';
                 return;
             }
+            createAccount(username,password);
             
-            // Show loading indicator
+            /* // Show loading indicator
             loadingDiv.style.display = 'block';
             form.querySelectorAll('button').forEach(btn => btn.disabled = true);
             
@@ -223,7 +225,7 @@
             } finally {
                 loadingDiv.style.display = 'none';
                 form.querySelectorAll('button').forEach(btn => btn.disabled = false);
-            }
+            } */
         }
     </script>
 </body>
