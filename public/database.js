@@ -65,6 +65,21 @@ export async function incWins(userid) {
         client.release();
     }
 }
+export async function setELO(userid,num) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'UPDATE users SET wins = $1 WHERE userid = $2';
+        const res = await client.query(queryText, [num,userid]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
 
 export async function incLosses(userid) {
     let client = await pool.connect();
@@ -82,7 +97,7 @@ export async function incLosses(userid) {
     }
 }
 
-export async function getWinLoss(userid) {
+export async function getWinLoss(userId) {
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -93,6 +108,28 @@ export async function getWinLoss(userid) {
               const { wins, losses } = res.rows[0];
               console.log(`User ${userId} - Wins: ${wins}, Losses: ${losses}`);
               return { wins, losses };
+            } else {
+              console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getELO(userId) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT elo FROM users WHERE userid = $1';
+            const res = await client.query(queryText, [userId]);
+        
+            if (res.rows.length > 0) {
+              const { elo } = res.rows[0];
+              console.log(`User ${userId} - ELO: ${elo}`);
+              return elo;
             } else {
               console.log(`No user found with ID ${userId}`);
               return null;
