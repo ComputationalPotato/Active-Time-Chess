@@ -101,7 +101,6 @@
         playerColor = data.color;
         board.orientation(data.color);
         board.position(data.position);
-
         // Apply any existing cooldowns
         data.cooldowns.forEach(([square, time]) => {
             if (Date.now() < time) {
@@ -115,9 +114,19 @@
     });
 
     socket.on('moveMade', (data) => {
-        board.position(data.position);
-        game.pieceCooldowns.set(data.cooldown.square, data.cooldown.time);
-        updateCooldownCircle(data.piece, data.cooldown.square);
+        game.position={...data.position};
+        board.position(game.position);
+        // Apply any existing cooldowns
+        data.cooldowns.forEach(([square, time]) => {
+            if (Date.now() < time) {
+                game.pieceCooldowns.set(square, time);
+                const piece = game.position[square];
+                if (piece) {
+                    updateCooldownCircle(piece, square);
+                }
+            }
+        });
+        //updateCooldownCircle(data.piece, data.cooldown.square);
     });
 
     socket.on('boardReset', (data) => {
@@ -136,7 +145,8 @@
         console.log('Player disconnected, remaining players:', data.remainingPlayers);
     });
     socket.on('gameOver', (data) => {
-        showGameEndMessage(data.winner, "resign");
+        console.log("got game over msg");
+        showGameEndMessage(data.winner, data.method);
     });
 
     // Initialize board and UI
@@ -244,7 +254,7 @@
      * @param {string} piece
      * @param {string} square
      */
-    function updateCooldownCircle(piece, square) {
+    function updateCooldownCircle(piece: string, square: string) {
         const cooldownId = `cooldown-${square}`;
         const existingCircle = document.getElementById(cooldownId);
         if (existingCircle) {
@@ -269,7 +279,11 @@
         circle.style.strokeWidth = "3";
         circle.style.fill = "rgba(255, 0, 0, 0.2)";
 
-        const cooldownTime = game.getPieceCooldownTime(piece);
+        const cooldownTime = game.pieceCooldowns.get(square)-Date.now();
+        if(cooldownTime<0)
+        {
+            return;
+        }
 
         const animation = circle.animate([
             { strokeDashoffset: '0' },

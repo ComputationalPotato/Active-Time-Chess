@@ -37,16 +37,17 @@ export class Game {
         "h1": "wR"
     };
     position:object;
-    pieceCooldowns: Map<any, any>;
-    winner: any;
+    pieceCooldowns: Map<string, number>;
+    winner: string|null;
     gameEnded: boolean;
     COOLDOWN_TIMES:object;
     constructor() {
-        this.position = Game.startPos;
+        this.position = {...Game.startPos};
         this.gameEnded = false;
         this.winner=null;
 
         this.pieceCooldowns = new Map(); // Track piece cooldowns
+        console.log(this.pieceCooldowns);
         
 
         this.COOLDOWN_TIMES = {
@@ -74,7 +75,7 @@ export class Game {
     /**
      * @param {string} piece
      */
-    getPieceCooldownTime(piece) {
+    getPieceCooldownTime(piece: string): number {
         const pieceType = piece.charAt(1).toLowerCase();
         return this.COOLDOWN_TIMES[pieceType] || 3000;
     }
@@ -162,7 +163,8 @@ export class Game {
         switch (pieceType) {
             case 'p':
                 if (color === 'w') {
-                    if (colDiff === 1 && rowTo - rowFrom === 1 && targetPiece) {
+                    console.log(colDiff,rowTo,rowFrom,targetPiece);
+                    if (colDiff === 1 && rowDiff === 1 && targetPiece) {
                         return true;
                     }
                     if (colDiff === 0 && !targetPiece) {
@@ -235,10 +237,7 @@ export class Game {
     afterMove(source, target, piece) {
         this.recordPieceMove(piece, source);
 
-        // Check for king capture only if there's a piece on the target square that differs in color
-        if (this.position[target] && this.position[target].charAt(0) !== piece.charAt(0)) {
-            this.checkForKingCapture(target);
-        }
+        
 
         //i think this one is outdated or smth.
         /* // Handle castling
@@ -287,6 +286,10 @@ export class Game {
         if (!this.isLegalMove(source, target, piece)) {
             console.log('Illegal move attempted');
             return false;
+        }
+        // Check for king capture only if there's a piece on the target square that differs in color
+        if (this.position[target] && this.position[target].charAt(0) !== piece.charAt(0)) {
+            this.checkForKingCapture(target);
         }
         this.position[target]=piece;
         delete this.position[source];

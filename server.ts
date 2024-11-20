@@ -200,8 +200,13 @@ io.on('connection', (socket) => {
             target,
             piece,
             position: match.game.position,
-            cooldown: match.game.pieceCooldowns
+            cooldowns: Array.from(match.game.pieceCooldowns.entries())
         });
+        if(match.game.winner)
+        {
+            console.log("game won");
+            io.to(matchId).emit('gameOver', { winner:match.game.winner, method:"capture" });
+        }
     });
 
     socket.on('resetBoard', () => {
@@ -229,17 +234,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('resign', () => {
-        const gameId = playerMatches.get(socket.id);
-        if (!gameId) return;
+        const matchId = playerMatches.get(socket.id);
+        if (!matchId) return;
     
-        const game = matches.get(gameId);
-        if (!game) return;
+        const match = matches.get(matchId);
+        if (!match) return;
     
-        const playerColor = game.getPlayerColor(socket.id);
+        const playerColor = match.getPlayerColor(socket.id);
         const winner = playerColor === 'white' ? 'Black' : 'White';
-    
+        match.game.winner=winner;
         // Emit a game over event to declare the winner
-        io.to(gameId).emit('gameOver', { winner });
+        io.to(matchId).emit('gameOver', { winner:winner,method:"resign" });
     });
     
     
