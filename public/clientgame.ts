@@ -217,19 +217,19 @@
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>The game ended in a draw.</p>
-            <button onclick="location.reload()">Play Again</button>
+            <button onclick="location.reload()">Close</button>
         `;
         } else if (method === "resign") {
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>${winner} wins by resignation!</p>
-            <button onclick="location.reload()">Play Again</button>
+            <button onclick="location.reload()">Close</button>
         `;
         } else {
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>${winner} wins by capturing the king!</p>
-            <button onclick="location.reload()">Play Again</button>
+            <button onclick="location.reload()">Close</button>
         `;
         }
 
