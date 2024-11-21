@@ -385,3 +385,14 @@ const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+//returns [p1newELO,p2newELO]
+function eloCalc(p1ELO: number, p2ELO: number, p1won: boolean) {
+    if (p1won) {
+        return [elo.newRatingIfWon(p1ELO, p2ELO), elo.newRatingIfLost(p2ELO, p1ELO)];
+    }
+    else
+    {
+        return [elo.newRatingIfLost(p1ELO, p2ELO), elo.newRatingIfWon(p2ELO, p1ELO)];
+    }
+}

@@ -140,3 +140,22 @@ export async function getELO(userId) {
         client.release();
     }
 }
+
+export async function updateELO(userId1,elo1,userId2,elo2) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            await client.query('BEGIN');
+            const queryText1 = 'UPDATE users SET elo = $1 WHERE userid = $2';
+            const res1 = await client.query(queryText1, [elo1,userId1]);
+            const queryText2 = 'UPDATE users SET elo = $1 WHERE userid = $2';
+            const res2 = await client.query(queryText2, [elo2,userId2]);
+            
+            await client.query('COMMIT');
+            return true;
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
