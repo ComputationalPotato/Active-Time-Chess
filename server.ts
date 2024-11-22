@@ -86,7 +86,7 @@ io.on('connection', (socket) => {
         for (let [id, g] of matches.entries()) {
             console.log(g)
             console.log(g.players.length)
-            if (g.players.length < 2) {
+            if (g.players.length < 2 &&g.game.winner==null) {
                 if(g.ranked!=ranked ||(ranked && Math.abs(getELO(g.userIds.get(g.players[0]))-getELO(userId))>100))
                 {
                     continue;
