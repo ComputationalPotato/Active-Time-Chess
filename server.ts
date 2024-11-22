@@ -211,6 +211,7 @@ io.on('connection', (socket) => {
             console.log("game won");
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
             if (match.ranked) {
+                console.log(match.ranked)
                 if (match.game.winner == "white") {
                     incWins(match.userIds[match.players[0]]);
                     incLosses(match.userIds[match.players[1]]);

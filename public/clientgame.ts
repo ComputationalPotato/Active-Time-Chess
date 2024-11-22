@@ -1,7 +1,7 @@
     import {Game} from './gamelogic.js'
 //    import { ChessBoard } from 'chessboardjs';
 //    import { io } from "socket.io-client";
-    var ranked = document.getElementsByName('isranked')[0]?.content == "true";
+    var ranked = document.getElementsByName('isranked')[0]?.content === "true";
     console.log(ranked);
     let game= new Game();
     let board = null;
@@ -310,3 +310,4 @@
         overlay.setAttribute('height', boardElement.offsetHeight);
         squareSize = boardElement.offsetWidth / 8;
     }
+    
