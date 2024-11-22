@@ -8,7 +8,7 @@
     //const pieceCooldowns = new Map();
     let squareSize = 0;
     let playerColor = 'white'; // Default color
-
+    let userId=sessionStorage.getItem("userId");
     var config = {
         draggable: true,
         position: 'start',
@@ -75,7 +75,7 @@
     let gameId = new URLSearchParams(window.location.search).get('game');
     if (!gameId) {
         try {
-            let response = await socket.timeout(10000).emitWithAck('lfg');
+            let response = await socket.timeout(10000).emitWithAck('lfg',false,userId);
             gameId=response.gameId;
             console.log("got resp to lfg")
         } catch (e) {
@@ -85,7 +85,7 @@
         }
     }
     
-    socket.emit('joinGame', gameId);
+    socket.emit('joinGame', gameId, userId,false);
     
     // Add game ID to URL without reloading
     if (!window.location.search.includes('game=')) {
@@ -145,6 +145,7 @@
         console.log('Player disconnected, remaining players:', data.remainingPlayers);
     });
     socket.on('gameOver', (data) => {
+        game.winner=data.winner;
         console.log("got game over msg");
         showGameEndMessage(data.winner, data.method);
     });
