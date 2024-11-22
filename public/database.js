@@ -142,6 +142,10 @@ export async function getELO(userId) {
 }
 
 export async function updateELO(userId1,elo1,userId2,elo2) {
+    if(!userId1||!userId2)
+    {
+        return false;
+    }
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
