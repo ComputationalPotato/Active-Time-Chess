@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "active-time-chess": "file:",
+    "arpad": "^2.0.0",
+    "boardgame.io": "^0.50.2",
+    "chessboardjs": "^0.0.1",
+    "express": "^4.21.1",
+    "pg": "^8.13.1",
+    "socket.io": "^4.8.0",
+    "socketio": "^1.0.0"
+  },
+  "name": "active-time-chess",
+  "version": "1.0.0",
+  "description": "Hello World.\r Hello Again!",
+  "main": "gamelogic.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx tsc  --noCheck --target es2017&&node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/jquery": "^3.5.32",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,2 +1,2 @@
-Hello World.
-Hello Again!
+```npm install```
+```node server.js```

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Chessboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="drawModal" class="modal">
+        <div class="modal-content">
+            <h2>Draw Request</h2>
+            <p>Your opponent has requested a draw. Do you accept?</p>
+            <button id="acceptDraw">Yes</button>
+            <button id="declineDraw">No</button>
+        </div>
+    </div>
+    <div class="board-container">
+        <div id="myBoard"></div>
+        <svg class="cooldown-overlay" id="cooldownOverlay"></svg>
+        <div class="button-container">
+            <button id="startBtn">Start Position</button>
+            <button id="clearBtn">Clear Board</button>
+            <button id="resignBtn">Resign</button>
+            <button id="drawBtn">Request Draw</button>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
+    <script src="clientgame.js" type="module"></script>
+</body>
+</html>

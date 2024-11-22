@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ATChess</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Login to ATChess</h2>
+        
+        <div id="error-message"></div>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <label for="username">Username</label>
+            <input 
+                type="text" 
+                id="username" 
+                placeholder="Enter Username"
+                required
+                autocomplete="username"
+            >
+            
+            <label for="password">Password</label>
+            <input 
+                type="password" 
+                id="password" 
+                placeholder="Enter Password"
+                required
+                autocomplete="current-password"
+            >
+            
+            <div>
+                <button type="submit">Login</button>
+                <a href="/index.html"><button type="button">Back</button></a>
+            </div>
+            
+            <div class="loading" id="loading">Logging in</div>
+        </form>
+        
+        <div class="create-account">
+            <p>New Player? <a href="signup.html">Create an account</a></p>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            const loadingDiv = document.getElementById('loading');
+            const form = document.getElementById('loginForm');
+            
+            // Reset error message
+            errorDiv.style.display = 'none';
+            
+            // Show loading indicator
+            loadingDiv.style.display = 'block';
+            form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const result = await trylogin(username, password);
+                
+                if (result) {
+                    window.location.href = '/main.html';
+                } else {
+                    errorDiv.textContent = 'Invalid username or password';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+                form.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+    </script>
+    <script src="accounts.js"></script>
+</body>
+</html>

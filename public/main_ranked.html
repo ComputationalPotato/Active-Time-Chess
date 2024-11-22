@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Ranked</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="board-container">
+        <div class="player-info">
+            <div class="player">
+                <div class="username" id="opponent-username">Opponent</div>
+                <div class="elo" id="opponent-elo">(1500)</div>
+                <div class="stats" id="opponent-stats">W: 0 L: 0</div>
+            </div>
+        </div>
+        
+        <div id="drawModal" class="modal">
+            <div class="modal-content">
+                <h2>Draw Request</h2>
+                <p>Your opponent has requested a draw. Do you accept?</p>
+                <button id="acceptDraw">Yes</button>
+                <button id="declineDraw">No</button>
+            </div>
+        </div>
+        
+        <div id="myBoard"></div>
+        <svg class="cooldown-overlay" id="cooldownOverlay"></svg>
+        
+        <div class="player-info">
+            <div class="player">
+                <div class="username" id="player-username">You</div>
+                <div class="elo" id="player-elo">(1500)</div>
+                <div class="stats" id="player-stats">W: 0 L: 0</div>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="startBtn">Start Position</button>
+            <button id="clearBtn">Clear Board</button>
+            <button id="resignBtn">Resign</button>
+            <button id="drawBtn">Request Draw</button>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
+    <script src="accounts.js" type="module"></script>
+    <meta name="isranked" content="true" />
+
+    <script type="module">
+        //import { getWinLoss, incWins, incLosses } from './accounts.js';
+
+        // Get the current user's ID from localStorage
+        const userId = sessionStorage.getItem('userId');
+        
+        // Function to update player stats
+        async function updatePlayerStats() {
+            if (userId) {
+                const stats = await getWinLoss(userId);
+                if (stats) {
+                    document.getElementById('player-stats').textContent = 
+                        `W: ${stats.wins} L: ${stats.losses}`;
+                }
+            }
+        }
+
+        // Function to handle game end
+        async function handleGameEnd(won) {
+            if (userId) {
+                
+                await updatePlayerStats();
+            }
+        }
+
+        // Update stats when page loads
+        window.addEventListener('load', updatePlayerStats);
+
+        // Make these functions available to clientgame.js
+        window.handleGameEnd = handleGameEnd;
+    </script>
+    <script src="clientgame.js" type="module"></script>
+</body>
+</html>

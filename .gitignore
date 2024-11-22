@@ -1,0 +1,6 @@
+node_modules/
+.cache
+.parcel-cache
+dist
+pnpm-lock.yaml
+package-lock.json

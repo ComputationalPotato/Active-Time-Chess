@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - ATChess</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Create Account</h2>
+        
+        <div id="error-message"></div>
+        
+        <form id="signupForm" onsubmit="handleSignup(event)">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[a-zA-Z0-9_-]+"
+                    title="Username must be between 3-20 characters and can only contain letters, numbers, underscores, and hyphens"
+                >
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required
+                    autocomplete="new-password"
+                    minlength="8"
+                >
+            </div>
+            
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirm-password" 
+                    name="confirm-password" 
+                    required
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <div>
+                <button type="submit">Create Account</button>
+                <a href="/index.html"><button type="button">Back</button></a>
+            </div>
+            
+            <div class="loading" id="loading">Creating account</div>
+        </form>
+        
+        <div class="login-link">
+            <p>Already have an account? <a href="login.html">Login here</a></p>
+        </div>
+    </div>
+
+    <script src="accounts.js"></script>
+    <script>
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorDiv = document.getElementById('error-message');
+            const loadingDiv = document.getElementById('loading');
+            const form = document.getElementById('signupForm');
+            
+            // Reset error message
+            errorDiv.style.display = 'none';
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            createAccount(username,password);
+            
+            /* // Show loading indicator
+            loadingDiv.style.display = 'block';
+            form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const response = await fetch('/api/create-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to login page
+                    window.location.href = 'login.html';
+                } else {
+                    errorDiv.textContent = data.message;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+                form.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            } */
+        }
+    </script>
+</body>
+</html>
