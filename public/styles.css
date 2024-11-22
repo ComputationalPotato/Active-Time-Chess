@@ -394,6 +394,12 @@ label {
     text-decoration: underline;
 }
 
+.stats {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 4px;
+}
+
 .player-info {
     display: flex;
     justify-content: space-between;

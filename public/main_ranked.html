@@ -13,6 +13,7 @@
             <div class="player">
                 <div class="username" id="opponent-username">Opponent</div>
                 <div class="elo" id="opponent-elo">(1500)</div>
+                <div class="stats" id="opponent-stats">W: 0 L: 0</div>
             </div>
         </div>
         
@@ -32,6 +33,7 @@
             <div class="player">
                 <div class="username" id="player-username">You</div>
                 <div class="elo" id="player-elo">(1500)</div>
+                <div class="stats" id="player-stats">W: 0 L: 0</div>
             </div>
         </div>
         
@@ -46,6 +48,42 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
+    <script src="accounts.js" type="module"></script>
+    <script type="module">
+        import { getWinLoss, incWins, incLosses } from './accounts.js';
+
+        // Get the current user's ID from localStorage
+        const userId = localStorage.getItem('userId');
+        
+        // Function to update player stats
+        async function updatePlayerStats() {
+            if (userId) {
+                const stats = await getWinLoss(userId);
+                if (stats) {
+                    document.getElementById('player-stats').textContent = 
+                        `W: ${stats.wins} L: ${stats.losses}`;
+                }
+            }
+        }
+
+        // Function to handle game end
+        async function handleGameEnd(won) {
+            if (userId) {
+                if (won) {
+                    await incWins(userId);
+                } else {
+                    await incLosses(userId);
+                }
+                await updatePlayerStats();
+            }
+        }
+
+        // Update stats when page loads
+        window.addEventListener('load', updatePlayerStats);
+
+        // Make these functions available to clientgame.js
+        window.handleGameEnd = handleGameEnd;
+    </script>
     <script src="clientgame.js" type="module"></script>
 </body>
 </html>
