@@ -31,23 +31,23 @@ const COOLDOWN_TIME = 3000; // 3 seconds to match client // 3 seconds to match c
 class Match {
     game: Game;
     id: string;
-    userIds:Map<string,string>;
+    userIds: Map<string, string>;
     players: string[];
     spectators: Set<string>;
-    ranked:boolean;
-    constructor(id: string, ranked=false) {
+    ranked: boolean;
+    constructor(id: string, ranked = false) {
         this.id = id;
         this.players = [];
-        this.userIds=new Map();
+        this.userIds = new Map();
         this.game = new Game();
         this.spectators = new Set();
-        this.ranked=ranked;
+        this.ranked = ranked;
     }
 
     addPlayer(socketId: string, userId: string) {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
-        this.userIds.set(socketId,userId)
+        this.userIds.set(socketId, userId)
         return true;
     }
 
@@ -81,14 +81,13 @@ class Match {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('lfg', (ranked,userId,callback) => {
+    socket.on('lfg', (ranked, userId, callback) => {
         console.log("got lfg");
         for (let [id, g] of matches.entries()) {
             console.log(g)
             console.log(g.players.length)
-            if (g.players.length < 2 &&g.game.winner==null) {
-                if(g.ranked!=ranked ||(ranked && Math.abs(getELO(g.userIds.get(g.players[0]))-getELO(userId))>100))
-                {
+            if (g.players.length < 2 && g.game.winner == null) {
+                if (g.ranked != ranked || (ranked && Math.abs(getELO(g.userIds.get(g.players[0])) - getELO(userId)) > 100)) {
                     continue;
                 }
                 console.log('found open game');
@@ -101,17 +100,17 @@ io.on('connection', (socket) => {
         callback({ gameId: Math.random().toString(36).substring(7) });
     });
 
-    socket.on('joinGame', (gameId,userId,ranked) => {
+    socket.on('joinGame', (gameId, userId, ranked) => {
         // Create or join game
         if (!matches.has(gameId)) {
-            matches.set(gameId, new Match(gameId,ranked));
+            matches.set(gameId, new Match(gameId, ranked));
         }
 
         const match = matches.get(gameId);
         if (!match) {
             throw "created game vanished";
         }
-        const joined = match.addPlayer(socket.id,userId);
+        const joined = match.addPlayer(socket.id, userId);
 
         if (joined) {
             playerMatches.set(socket.id, gameId);
@@ -211,18 +210,18 @@ io.on('connection', (socket) => {
         if (match.game.winner) {
             console.log("game won");
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
-            if(match.game.winner=="white")
-            {
-                incWins(match.userIds[match.players[0]]);
-                incLosses(match.userIds[match.players[1]]);
+            if (match.ranked) {
+                if (match.game.winner == "white") {
+                    incWins(match.userIds[match.players[0]]);
+                    incLosses(match.userIds[match.players[1]]);
+                }
+                else {
+                    incLosses(match.userIds[match.players[0]]);
+                    incWins(match.userIds[match.players[1]]);
+                }
+                let [p1elo, p2elo] = eloCalc(getELO(match.userIds[match.players[0]]), getELO(match.userIds[match.players[1]]), match.game.winner == "white");
+                updateELO(match.userIds[match.players[0]], p1elo, match.userIds[match.players[1]], p2elo);
             }
-            else
-            {
-                incLosses(match.userIds[match.players[0]]);
-                incWins(match.userIds[match.players[1]]);
-            }
-            let [p1elo,p2elo]=eloCalc(getELO(match.userIds[match.players[0]]),getELO(match.userIds[match.players[1]]),match.game.winner=="white");
-            updateELO(match.userIds[match.players[0]],p1elo,match.userIds[match.players[1]],p2elo);
         }
     });
 
@@ -407,8 +406,7 @@ function eloCalc(p1ELO: number, p2ELO: number, p1won: boolean) {
     if (p1won) {
         return [elo.newRatingIfWon(p1ELO, p2ELO), elo.newRatingIfLost(p2ELO, p1ELO)];
     }
-    else
-    {
+    else {
         return [elo.newRatingIfLost(p1ELO, p2ELO), elo.newRatingIfWon(p2ELO, p1ELO)];
     }
 }
