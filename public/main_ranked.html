@@ -49,11 +49,13 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
     <script src="accounts.js" type="module"></script>
+    <meta name="isranked" content="true" />
+
     <script type="module">
-        import { getWinLoss, incWins, incLosses } from './accounts.js';
+        //import { getWinLoss, incWins, incLosses } from './accounts.js';
 
         // Get the current user's ID from localStorage
-        const userId = localStorage.getItem('userId');
+        const userId = sessionStorage.getItem('userId');
         
         // Function to update player stats
         async function updatePlayerStats() {
@@ -69,11 +71,7 @@
         // Function to handle game end
         async function handleGameEnd(won) {
             if (userId) {
-                if (won) {
-                    await incWins(userId);
-                } else {
-                    await incLosses(userId);
-                }
+                
                 await updatePlayerStats();
             }
         }

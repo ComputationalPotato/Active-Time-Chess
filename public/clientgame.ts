@@ -1,7 +1,8 @@
     import {Game} from './gamelogic.js'
 //    import { ChessBoard } from 'chessboardjs';
 //    import { io } from "socket.io-client";
-
+    var ranked = document.getElementsByName('isranked')[0]?.content == "true";
+    console.log(ranked);
     let game= new Game();
     let board = null;
     const COOLDOWN_TIME = 3000;
@@ -75,7 +76,7 @@
     let gameId = new URLSearchParams(window.location.search).get('game');
     if (!gameId) {
         try {
-            let response = await socket.timeout(10000).emitWithAck('lfg',false,userId);
+            let response = await socket.timeout(10000).emitWithAck('lfg',ranked,userId);
             gameId=response.gameId;
             console.log("got resp to lfg")
         } catch (e) {
@@ -85,7 +86,7 @@
         }
     }
     
-    socket.emit('joinGame', gameId, userId,false);
+    socket.emit('joinGame', gameId, userId,ranked);
     
     // Add game ID to URL without reloading
     if (!window.location.search.includes('game=')) {

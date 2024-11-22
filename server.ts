@@ -211,6 +211,16 @@ io.on('connection', (socket) => {
         if (match.game.winner) {
             console.log("game won");
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
+            if(match.game.winner=="white")
+            {
+                incWins(match.userIds[match.players[0]]);
+                incLosses(match.userIds[match.players[1]]);
+            }
+            else
+            {
+                incLosses(match.userIds[match.players[0]]);
+                incWins(match.userIds[match.players[1]]);
+            }
             let [p1elo,p2elo]=eloCalc(getELO(match.userIds[match.players[0]]),getELO(match.userIds[match.players[1]]),match.game.winner=="white");
             updateELO(match.userIds[match.players[0]],p1elo,match.userIds[match.players[1]],p2elo);
         }
