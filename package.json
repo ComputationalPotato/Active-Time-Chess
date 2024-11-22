@@ -23,6 +23,8 @@
   "type": "module",
   "devDependencies": {
     "@types/jquery": "^3.5.32",
+    "stylelint": "^16.10.0",
+    "stylelint-config-standard": "^36.0.1",
     "typescript": "^5.6.3"
   }
 }

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Home Page - ATChess</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="main-container">
         <!-- Left Side -->
@@ -56,16 +58,16 @@
             try {
                 const stats = await getWinLoss(userId);
                 if (stats) {
-                    document.getElementById('winLossStats').textContent = 
+                    document.getElementById('winLossStats').textContent =
                         `Wins: ${stats.wins} | Losses: ${stats.losses}`;
-                    
+
                     // Calculate win rate
                     const totalGames = stats.wins + stats.losses;
-                    const winRate = totalGames > 0 
-                        ? ((stats.wins / totalGames) * 100).toFixed(1) 
+                    const winRate = totalGames > 0
+                        ? ((stats.wins / totalGames) * 100).toFixed(1)
                         : 0;
-                    
-                    document.getElementById('winLossStats').textContent += 
+
+                    document.getElementById('winLossStats').textContent +=
                         ` | Win Rate: ${winRate}%`;
                 }
             } catch (error) {
@@ -84,10 +86,10 @@
             // Get username from localStorage if you stored it during login
             const username = localStorage.getItem('username') || 'User';
             document.getElementById('username').textContent = username;
-            
+
             // Update stats
             await updateStats();
-            
+
             // Set default messages for empty states
             document.getElementById('friendsList').textContent = 'No friends yet';
         }
@@ -96,4 +98,5 @@
         window.addEventListener('load', initializePage);
     </script>
 </body>
+
 </html>
