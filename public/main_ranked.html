@@ -3,22 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-time Chessboard</title>
+    <title>Play Ranked</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="drawModal" class="modal">
-        <div class="modal-content">
-            <h2>Draw Request</h2>
-            <p>Your opponent has requested a draw. Do you accept?</p>
-            <button id="acceptDraw">Yes</button>
-            <button id="declineDraw">No</button>
-        </div>
-    </div>
     <div class="board-container">
+        <div class="player-info">
+            <div class="player">
+                <div class="username" id="opponent-username">Opponent</div>
+                <div class="elo" id="opponent-elo">(1500)</div>
+            </div>
+        </div>
+        
+        <div id="drawModal" class="modal">
+            <div class="modal-content">
+                <h2>Draw Request</h2>
+                <p>Your opponent has requested a draw. Do you accept?</p>
+                <button id="acceptDraw">Yes</button>
+                <button id="declineDraw">No</button>
+            </div>
+        </div>
+        
         <div id="myBoard"></div>
         <svg class="cooldown-overlay" id="cooldownOverlay"></svg>
+        
+        <div class="player-info">
+            <div class="player">
+                <div class="username" id="player-username">You</div>
+                <div class="elo" id="player-elo">(1500)</div>
+            </div>
+        </div>
+        
         <div class="button-container">
             <button id="startBtn">Start Position</button>
             <button id="clearBtn">Clear Board</button>
