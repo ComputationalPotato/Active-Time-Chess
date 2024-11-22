@@ -142,7 +142,7 @@ export async function getELO(userId) {
 }
 
 export async function updateELO(userId1,elo1,userId2,elo2) {
-    if(!userId1||!userId2)
+    if(!userId1||!userId2 ||!elo1 ||!elo2)
     {
         return false;
     }
@@ -158,6 +158,7 @@ export async function updateELO(userId1,elo1,userId2,elo2) {
             await client.query('COMMIT');
             return true;
     } catch (e) {
+        console.log("sql error")
         throw e;
     } finally {
         client.release();
