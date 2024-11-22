@@ -16,7 +16,7 @@ async function trylogin(username, password) {
         
         if (data.success) {
             // Store user info in session/localStorage if needed
-            localStorage.setItem('userId', data.userId);
+            sessionStorage.setItem('userId', data.userId);
             // Redirect to game page or dashboard
             window.location.href = '/main.html';
         } else {

@@ -3,9 +3,9 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {tryLogin,createAccount,incWins,incLosses,getWinLoss} from './public/database.js'
+import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getELO, updateELO } from './public/database.js'
 
-import {Game} from "./public/gamelogic.js"
+import { Game } from "./public/gamelogic.js"
 import Elo from 'arpad';
 
 const elo = new Elo();
@@ -22,7 +22,7 @@ app.use(express.static('public'));
 app.use('/chessboardjs', express.static(path.join(__dirname, 'node_modules', 'chessboardjs', 'www')));
 
 // Game state storage
-const matches = new Map<string,Match>();
+const matches = new Map<string, Match>();
 const playerMatches = new Map();
 
 // Constants
@@ -31,18 +31,23 @@ const COOLDOWN_TIME = 3000; // 3 seconds to match client // 3 seconds to match c
 class Match {
     game: Game;
     id: string;
+    userIds:Map<string,string>;
     players: string[];
     spectators: Set<string>;
-    constructor(id: string) {
+    ranked:boolean;
+    constructor(id: string, ranked=false) {
         this.id = id;
         this.players = [];
-        this.game= new Game();
+        this.userIds=new Map();
+        this.game = new Game();
         this.spectators = new Set();
+        this.ranked=ranked;
     }
 
-    addPlayer(socketId: string) {
+    addPlayer(socketId: string, userId: string) {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
+        this.userIds.set(socketId,userId)
         return true;
     }
 
@@ -76,35 +81,37 @@ class Match {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('lfg', (callback) => {
+    socket.on('lfg', (ranked,userId,callback) => {
         console.log("got lfg");
-        for(let [id,g] of matches.entries()) 
-        {
+        for (let [id, g] of matches.entries()) {
             console.log(g)
             console.log(g.players.length)
-            if(g.players.length<2)
-            {
+            if (g.players.length < 2) {
+                if(g.ranked!=ranked ||(ranked && Math.abs(getELO(g.userIds.get(g.players[0]))-getELO(userId))>100))
+                {
+                    continue;
+                }
                 console.log('found open game');
-                callback({gameId:id});
+                callback({ gameId: id });
                 return;
             }
         }
         console.log("sent back new game");
-        callback({gameId:Math.random().toString(36).substring(7)});
+        //console.log(callback)
+        callback({ gameId: Math.random().toString(36).substring(7) });
     });
 
-    socket.on('joinGame', (gameId) => {
+    socket.on('joinGame', (gameId,userId,ranked) => {
         // Create or join game
         if (!matches.has(gameId)) {
-            matches.set(gameId, new Match(gameId));
+            matches.set(gameId, new Match(gameId,ranked));
         }
 
         const match = matches.get(gameId);
-        if(!match)
-        {
+        if (!match) {
             throw "created game vanished";
         }
-        const joined = match.addPlayer(socket.id);
+        const joined = match.addPlayer(socket.id,userId);
 
         if (joined) {
             playerMatches.set(socket.id, gameId);
@@ -139,32 +146,32 @@ io.on('connection', (socket) => {
     socket.on('requestDraw', () => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
-    
+
         const match = matches.get(gameId);
         if (!match) return;
-    
+
         // Find the opponent's socket
         const opponentSocketId = match.players.find(id => id !== socket.id);
         if (opponentSocketId) {
             io.to(opponentSocketId).emit('drawRequest');
         }
     });
-    
+
     socket.on('acceptDraw', () => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
         console.log('Both players accepted the draw. Emitting drawAccepted event.');
         io.to(gameId).emit('drawAccepted');
     });
-    
+
     socket.on('declineDraw', () => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
         console.log('Draw Declined.');
         io.to(gameId).emit('drawDeclined');
     });
-    
-    
+
+
 
     socket.on('move', (data) => {
         const matchId = playerMatches.get(socket.id);
@@ -173,27 +180,26 @@ io.on('connection', (socket) => {
         const match = matches.get(matchId);
         if (!match) return;
 
-        const { source, target} = data;
+        const { source, target } = data;
 
         // Verify it's the player's turn based on piece color
-        const piece=match.game.position[source];
+        const piece = match.game.position[source];
         const playerColor = match.getPlayerColor(socket.id);
         const pieceColor = piece.charAt(0) === 'w' ? 'white' : 'black';
-        if (playerColor !== pieceColor) 
-        {
+        if (playerColor !== pieceColor) {
 
         }
         else if (!match.game.tryMove(source, target, piece)) {
             console.log('Illegal move attempted');
         }
         //handled in Game()
-/*         // Check cooldown
-        if (match.isPieceOnCooldown(source)) return;
-
-        // Set cooldown and update position
-        match.setCooldown(target);
-        match.position = newPosition;
- */
+        /*         // Check cooldown
+                if (match.isPieceOnCooldown(source)) return;
+        
+                // Set cooldown and update position
+                match.setCooldown(target);
+                match.position = newPosition;
+         */
         // Broadcast move to all players and spectators
         io.to(matchId).emit('moveMade', {
             source,
@@ -202,10 +208,11 @@ io.on('connection', (socket) => {
             position: match.game.position,
             cooldowns: Array.from(match.game.pieceCooldowns.entries())
         });
-        if(match.game.winner)
-        {
+        if (match.game.winner) {
             console.log("game won");
-            io.to(matchId).emit('gameOver', { winner:match.game.winner, method:"capture" });
+            io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
+            let [p1elo,p2elo]=eloCalc(getELO(match.userIds[match.players[0]]),getELO(match.userIds[match.players[1]]),match.game.winner=="white");
+            updateELO(match.userIds[match.players[0]],p1elo,match.userIds[match.players[1]],p2elo);
         }
     });
 
@@ -236,19 +243,19 @@ io.on('connection', (socket) => {
     socket.on('resign', () => {
         const matchId = playerMatches.get(socket.id);
         if (!matchId) return;
-    
+
         const match = matches.get(matchId);
         if (!match) return;
-    
+
         const playerColor = match.getPlayerColor(socket.id);
         const winner = playerColor === 'white' ? 'Black' : 'White';
-        match.game.winner=winner;
+        match.game.winner = winner;
         // Emit a game over event to declare the winner
-        io.to(matchId).emit('gameOver', { winner:winner,method:"resign" });
+        io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
     });
-    
-    
-    
+
+
+
 
     socket.on('disconnect', () => {
         const gameId = playerMatches.get(socket.id);
@@ -285,7 +292,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const userId = await tryLogin(username, password);
-        
+
         if (userId) {
             res.json({
                 success: true,
@@ -310,7 +317,7 @@ app.post('/api/create-account', async (req, res) => {
     try {
         const { username, password } = req.body;
         const success = await createAccount(username, password);
-        
+
         res.json({
             success: success,
             message: success ? 'Account created successfully' : 'Username already exists'
@@ -328,7 +335,7 @@ app.post('/api/incWins', async (req, res) => {
     try {
         const { userId } = req.body;
         const success = await incWins(userId);
-        
+
         res.json({
             success: success,
             message: success ? 'win inced' : 'win not inced'
@@ -345,7 +352,7 @@ app.post('/api/incLosses', async (req, res) => {
     try {
         const { userId } = req.body;
         const success = await incLosses(userId);
-        
+
         res.json({
             success: success,
             message: success ? 'loss inced' : 'loss not inced'
@@ -362,12 +369,11 @@ app.post('/api/incLosses', async (req, res) => {
 app.post('/api/getWinLoss', async (req, res) => {
     try {
         const { userId } = req.body;
-        const {wins, losses} = (await getWinLoss(userId))|| {wins:-1,losses:-1};
-        if(wins<0||losses<0)
-        {
+        const { wins, losses } = (await getWinLoss(userId)) || { wins: -1, losses: -1 };
+        if (wins < 0 || losses < 0) {
             throw "getWinLoss returned null";
         }
-        
+
         res.json({
             wins: wins,
             losses: losses
