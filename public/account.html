@@ -48,7 +48,7 @@
         //import { getWinLoss } from './accounts.js';
 
         // Check if user is logged in
-        const userId = localStorage.getItem('userId');
+        const userId = sessionStorage.getItem('userId');
         if (!userId) {
             window.location.href = 'index.html';
         }
@@ -77,14 +77,14 @@
 
         // Sign out handler
         document.getElementById('signOutBtn').addEventListener('click', () => {
-            localStorage.removeItem('userId');
+            sessionStorage.removeItem('userId');
             window.location.href = 'index.html';
         });
 
         // Initialize page
         async function initializePage() {
-            // Get username from localStorage if you stored it during login
-            const username = localStorage.getItem('username') || 'User';
+            // Get username from sessionStorage if you stored it during login
+            const username = sessionStorage.getItem('username') || 'User';
             document.getElementById('username').textContent = username;
 
             // Update stats
