@@ -186,3 +186,91 @@ export async function getName(userId) {
         client.release();
     }
 }
+//send friend request. creates friendship object with userId as source and targetId as target
+//a user accepts a friend request by sending a request to the requester
+export async function sendFreq(userId,targetId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'insert into public.friendship("sourceId","targetId") values($1,$2)';
+        const res = await client.query(queryText, [userId,targetId]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getSentFreqs(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'select targetId from public.friendship where sourceId = $1';
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getIncomingFreqs(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'select targetId from public.friendship where targetId = $1';
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+//get friend requests that have been accepted
+export async function getFriends(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = `select u2.userid from public.users u 
+inner join public.friendship f on u.userid = f."sourceId" 
+inner join public.friendship f2 on f2."sourceId" = f."targetId" and f2."targetId" =f."sourceId"
+inner join public.users u2 on u2.userid =f2."sourceId" 
+where u.userid=$1`;
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function deleteFriend(userId,targetId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        let queryText = `delete from public.friendship f where f."sourceId" = $1 and f."targetId"=$2`;
+        let res = await client.query(queryText, [userId,targetId]);
+        queryText = `delete from public.friendship f where f."targetId" = $1 and f."sourceId"=$2`;
+        res = await client.query(queryText, [userId,targetId]);
+
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
