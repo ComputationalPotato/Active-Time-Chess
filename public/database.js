@@ -164,3 +164,25 @@ export async function updateELO(userId1,elo1,userId2,elo2) {
         client.release();
     }
 }
+
+export async function getName(userId) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT username FROM users WHERE userid = $1';
+            const res = await client.query(queryText, [userId]);
+        
+            if (res.rows.length > 0) {
+              const { name } = res.rows[0];
+              console.log(`User ${userId} - name: ${name}`);
+              return name;
+            } else {
+              console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
