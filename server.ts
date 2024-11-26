@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getELO, updateELO } from './public/database.js'
+import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getELO, updateELO,sendFreq,getSentFreqs,getIncomingFreqs,getFriends,deleteFriend } from './public/database.js'
 
 import { Game } from "./public/gamelogic.js"
 import Elo from 'arpad';
@@ -81,13 +81,13 @@ class Match {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('lfg', (ranked, userId, callback) => {
+    socket.on('lfg', async (ranked, userId, callback) => {
         console.log("got lfg");
         for (let [id, g] of matches.entries()) {
             console.log(g)
             console.log(g.players.length)
             if (g.players.length < 2 && g.game.winner == null) {
-                if (g.ranked != ranked || (ranked && Math.abs(getELO(g.userIds.get(g.players[0])) - getELO(userId)) > 100)) {
+                if (g.ranked != ranked || (ranked && Math.abs(await getELO(g.userIds.get(g.players[0])) - await getELO(userId)) > 100)) {
                     continue;
                 }
                 console.log('found open game');
@@ -172,7 +172,7 @@ io.on('connection', (socket) => {
 
 
 
-    socket.on('move', (data) => {
+    socket.on('move', async (data) => {
         const matchId = playerMatches.get(socket.id);
         if (!matchId) return;
 
@@ -220,7 +220,7 @@ io.on('connection', (socket) => {
                     incLosses(match.userIds[match.players[0]]);
                     incWins(match.userIds[match.players[1]]);
                 }
-                let [p1elo, p2elo] = eloCalc(getELO(match.userIds[match.players[0]]), getELO(match.userIds[match.players[1]]), match.game.winner == "white");
+                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds[match.players[0]]), await getELO(match.userIds[match.players[1]]), match.game.winner == "white");
                 updateELO(match.userIds[match.players[0]], p1elo, match.userIds[match.players[1]], p2elo);
             }
         }
@@ -390,6 +390,86 @@ app.post('/api/getWinLoss', async (req, res) => {
         });
     } catch (error) {
         console.error('getwinloss error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/sendFreq', async (req, res) => {
+    try {
+        const { userId, targetId } = req.body;
+        const success= await sendFreq(userId,targetId);
+
+        res.json({
+            success:success
+        });
+    } catch (error) {
+        console.error('sendFreq error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getSentFreqs', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const res= await getSentFreqs(userId);
+
+        res.json({
+            freqs:res
+        });
+    } catch (error) {
+        console.error('getSentFreqs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getIncomingFreqs', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const res= await getIncomingFreqs(userId);
+
+        res.json({
+            freqs:res
+        });
+    } catch (error) {
+        console.error('getIncomingFreqs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getFriends', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const res= await getFriends(userId);
+
+        res.json({
+            freqs:res
+        });
+    } catch (error) {
+        console.error('getFriends error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/deleteFriend', async (req, res) => {
+    try {
+        const { userId, targetId } = req.body;
+        const success= await deleteFriend(userId,targetId);
+
+        res.json({
+            success:success
+        });
+    } catch (error) {
+        console.error('deleteFriend error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error occurred'

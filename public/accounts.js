@@ -133,3 +133,121 @@ async function getWinLoss(userId) {
         alert('An error occurred during get win loss');
     }
 }
+
+async function sendFreq(userId,targetId) {
+    try {
+        const response = await fetch('/api/sendFreq', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId,
+                targetId:targetId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store user info in session/localStorage if needed
+            //localStorage.setItem('userId', data.userId);
+            // Redirect to game page or dashboard
+            //window.location.href = '/index.html';
+        } else {
+            alert('something went wrong with sendFreq');
+        }
+    } catch (error) {
+        console.error('sendFreq error:', error);
+        alert('An error occurred during sendFreq');
+    }
+}
+
+async function getSentFreqs(userId) {
+    try {
+        const response = await fetch('/api/getSentFreqs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        });
+
+        const data = await response.json();
+        
+        return data.freqs;
+    } catch (error) {
+        console.error('getSentFreqs error:', error);
+        alert('An error occurred during getSentFreqs');
+    }
+}
+async function getIncomingFreqs(userId) {
+    try {
+        const response = await fetch('/api/getIncomingFreqs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        });
+
+        const data = await response.json();
+        
+        return data.freqs;
+    } catch (error) {
+        console.error('getIncomingFreqs error:', error);
+        alert('An error occurred during getIncomingFreqs');
+    }
+}
+async function getFriends(userId) {
+    try {
+        const response = await fetch('/api/getFriends', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        });
+
+        const data = await response.json();
+        
+        return data.freqs;
+    } catch (error) {
+        console.error('getFriends error:', error);
+        alert('An error occurred during getFriends');
+    }
+}
+async function deleteFriend(userId,targetId) {
+    try {
+        const response = await fetch('/api/deleteFriend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId,
+                targetId:targetId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store user info in session/localStorage if needed
+            //localStorage.setItem('userId', data.userId);
+            // Redirect to game page or dashboard
+            //window.location.href = '/index.html';
+        } else {
+            alert('something went wrong with deleteFriend');
+        }
+    } catch (error) {
+        console.error('deleteFriend error:', error);
+        alert('An error occurred during deleteFriend');
+    }
+}
