@@ -124,7 +124,7 @@ export class Game {
      */
     isLegalMove(source, target, piece) {
         // If game has ended, no moves are legal
-        if (this.gameEnded) {
+        if (this.winner != null) {
             return false;
         }
 
