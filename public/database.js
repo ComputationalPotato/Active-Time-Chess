@@ -60,6 +60,7 @@ export async function incWins(userid) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
+        console.log("inc wins failed")
         throw e;
     } finally {
         client.release();
@@ -91,6 +92,7 @@ export async function incLosses(userid) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
+        console.log("inc losses failed")
         throw e;
     } finally {
         client.release();

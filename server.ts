@@ -212,16 +212,20 @@ io.on('connection', (socket) => {
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
             if (match.ranked) {
                 console.log(match.ranked)
+                console.log(match.userIds.entries());
+                console.log(match.players);
+                console.log(`p1 id: ${match.userIds.get(match.players[0])}`)
+                console.log(match.userIds.get(match.players[1]))
                 if (match.game.winner == "white") {
-                    incWins(match.userIds[match.players[0]]);
-                    incLosses(match.userIds[match.players[1]]);
+                    incWins(match.userIds.get(match.players[0]));
+                    incLosses(match.userIds.get(match.players[1]));
                 }
                 else {
-                    incLosses(match.userIds[match.players[0]]);
-                    incWins(match.userIds[match.players[1]]);
+                    incLosses(match.userIds.get(match.players[0]));
+                    incWins(match.userIds.get(match.players[1]));
                 }
-                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds[match.players[0]]), await getELO(match.userIds[match.players[1]]), match.game.winner == "white");
-                updateELO(match.userIds[match.players[0]], p1elo, match.userIds[match.players[1]], p2elo);
+                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds.get(match.players[0])), await getELO(match.userIds.get(match.players[1])), match.game.winner == "white");
+                updateELO(match.userIds.get(match.players[0]), p1elo, match.userIds.get(match.players[1]), p2elo);
             }
         }
     });
