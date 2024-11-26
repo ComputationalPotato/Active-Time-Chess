@@ -2,7 +2,7 @@
 
 export class Game {
     //make const after switch to typescript
-    static startPos = {
+    static readonly startPos = {
         "a8": "bR",
         "b8": "bN",
         "c8": "bB",
@@ -36,6 +36,7 @@ export class Game {
         "g1": "wN",
         "h1": "wR"
     };
+    static _=Object.freeze(this.startPos);
     position:object;
     pieceCooldowns: Map<string, number>;
     winner: string|null;

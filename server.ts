@@ -237,9 +237,9 @@ io.on('connection', (socket) => {
         const match = matches.get(matchId);
         if (!match) return;
 
-        match.game.position = Game.startPos;
+        match.game.position = {...Game.startPos};
         match.game.pieceCooldowns.clear();
-        io.to(matchId).emit('boardReset', { position: Game.startPos });
+        io.to(matchId).emit('boardReset', { position: {...Game.startPos} });
     });
 
     socket.on('clearBoard', () => {
