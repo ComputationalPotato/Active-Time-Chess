@@ -175,7 +175,7 @@ export class Game {
                     }
                     return false;
                 } else {
-                    if (colDiff === 1 && rowFrom - rowTo === 1 && targetPiece) {
+                    if (colDiff === 1 && rowDiff === 1 && targetPiece) {
                         return true;
                     }
                     if (colDiff === 0 && !targetPiece) {
