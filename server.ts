@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getELO, updateELO,sendFreq,getSentFreqs,getIncomingFreqs,getFriends,deleteFriend } from './public/database.js'
+import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getName,getId,getELO, updateELO,sendFreq,getSentFreqs,getIncomingFreqs,getFriends,deleteFriend } from './public/database.js'
 
 import { Game } from "./public/gamelogic.js"
 import Elo from 'arpad';
@@ -415,10 +415,10 @@ app.post('/api/sendFreq', async (req, res) => {
 app.post('/api/getSentFreqs', async (req, res) => {
     try {
         const { userId } = req.body;
-        const res= await getSentFreqs(userId);
+        const result= await getSentFreqs(userId);
 
         res.json({
-            freqs:res
+            freqs:result
         });
     } catch (error) {
         console.error('getSentFreqs error:', error);
@@ -431,10 +431,10 @@ app.post('/api/getSentFreqs', async (req, res) => {
 app.post('/api/getIncomingFreqs', async (req, res) => {
     try {
         const { userId } = req.body;
-        const res= await getIncomingFreqs(userId);
+        const result= await getIncomingFreqs(userId);
 
         res.json({
-            freqs:res
+            freqs:result
         });
     } catch (error) {
         console.error('getIncomingFreqs error:', error);
@@ -447,10 +447,10 @@ app.post('/api/getIncomingFreqs', async (req, res) => {
 app.post('/api/getFriends', async (req, res) => {
     try {
         const { userId } = req.body;
-        const res= await getFriends(userId);
+        const result= await getFriends(userId);
 
         res.json({
-            freqs:res
+            freqs:result
         });
     } catch (error) {
         console.error('getFriends error:', error);
@@ -470,6 +470,22 @@ app.post('/api/deleteFriend', async (req, res) => {
         });
     } catch (error) {
         console.error('deleteFriend error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getId', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const result= await getId(username);
+
+        res.json({
+            id:result
+        });
+    } catch (error) {
+        console.error('getId error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error occurred'

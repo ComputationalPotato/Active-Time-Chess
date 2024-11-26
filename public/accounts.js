@@ -251,3 +251,23 @@ async function deleteFriend(userId,targetId) {
         alert('An error occurred during deleteFriend');
     }
 }
+async function getId(username) {
+    try {
+        const response = await fetch('/api/getId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username
+            })
+        });
+
+        const data = await response.json();
+        
+        return data.id;
+    } catch (error) {
+        console.error('getId error:', error);
+        alert('An error occurred during getId');
+    }
+}

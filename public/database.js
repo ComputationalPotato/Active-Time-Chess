@@ -173,11 +173,37 @@ export async function getName(userId) {
             const res = await client.query(queryText, [userId]);
         
             if (res.rows.length > 0) {
-              const { name } = res.rows[0];
+              const  name  = res.rows[0]["username"];
               console.log(`User ${userId} - name: ${name}`);
               return name;
             } else {
               console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+export async function getId(username) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT userid FROM users WHERE username = $1';
+            const res = await client.query(queryText, [username]);
+        
+            if (res.rows.length > 0) {
+              const  id  = res.rows[0]["userid"];
+              /* console.log(res.rows);
+              console.log(res.rows[0]);
+              console.log(res.rows[0][0]);
+              console.log(Object.keys(res.rows[0])); // This will print the actual column names
+              console.log(res.rows[0]["userid"]); */
+              console.log(`User ${username} - id: ${id}`);
+              return id;
+            } else {
+              console.log(`No user found with name ${username}`);
               return null;
             }
     } catch (e) {
@@ -208,7 +234,7 @@ export async function getSentFreqs(userId) {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const queryText = 'select targetId from public.friendship where sourceId = $1';
+        const queryText = 'select "targetId" from public.friendship where "sourceId" = $1';
         const res = await client.query(queryText, [userId]);
         await client.query('COMMIT');
         return res.rows;
@@ -224,7 +250,7 @@ export async function getIncomingFreqs(userId) {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const queryText = 'select targetId from public.friendship where targetId = $1';
+        const queryText = 'select "sourceId" from public.friendship where "targetId" = $1';
         const res = await client.query(queryText, [userId]);
         await client.query('COMMIT');
         return res.rows;
