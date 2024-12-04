@@ -17,10 +17,14 @@ async function trylogin(username, password) {
         if (data.success) {
             // Store user info in session/localStorage if needed
             sessionStorage.setItem('userId', data.userId);
-            // Redirect to game page or dashboard
-            window.location.href = '/accounts.html';
+            //caller handles the redirect
+            //// Redirect to game page or dashboard
+            //window.location.href = '/accounts.html';
+            return true;
         } else {
-            alert('Invalid username or password');
+            //login page has this already
+            //alert('Invalid username or password');
+            return false;
         }
     } catch (error) {
         console.error('Login error:', error);
