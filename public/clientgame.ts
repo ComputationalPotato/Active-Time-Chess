@@ -219,19 +219,19 @@
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>The game ended in a draw.</p>
-            <button onclick="location.reload()">Close</button>
+            <button onclick="location.replace('/account.html')">Close</button>
         `;
         } else if (method === "resign") {
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>${winner} wins by resignation!</p>
-            <button onclick="location.reload()">Close</button>
+            <button onclick="location.replace('/account.html')">Close</button>
         `;
         } else {
             messageContent.innerHTML = `
             <h2>Game Over!</h2>
             <p>${winner} wins by capturing the king!</p>
-            <button onclick="location.reload()">Close</button>
+            <button onclick="location.replace('/account.html')">Close</button>
         `;
         }
 
@@ -243,13 +243,13 @@
         // Disable further moves
         game.gameEnded = true;
 
-        // Add click outside to dismiss
+        /* // Add click outside to dismiss
         document.addEventListener('click', function closeMessage(e) {
             if (!messageContainer.contains(e.target)) {
                 messageContainer.remove();
                 document.removeEventListener('click', closeMessage);
             }
-        });
+        }); */
     }
 
     /**
