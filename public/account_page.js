@@ -10,21 +10,26 @@ async function sendFreqButton() {
     const targetId = await getId(targetName);
     const userId = sessionStorage.getItem('userId');
     await sendFreq(userId, targetId);
+    await updateFriendStuff();
+
 }
 async function handleXInc(row) {
     const targetId = row.sourceId;//incoming means that row.targetId is you.
     const userId = sessionStorage.getItem('userId');
     await deleteFriend(userId, targetId);
+    await updateFriendStuff();
 }
 async function handleXPend(row) {
     const targetId = row.targetId;
     const userId = sessionStorage.getItem('userId');
     await deleteFriend(userId, targetId);
+    await updateFriendStuff();
 }
 async function handleYes(row) {
     const targetId = row.sourceId;//incoming means that row.targetId is you.
     const userId = sessionStorage.getItem('userId');
     await sendFreq(userId, targetId);
+    await updateFriendStuff();
 }
 async function getPend() {
     const userId = sessionStorage.getItem('userId');
@@ -38,7 +43,9 @@ async function getPend() {
 
         // Display the row's content (customize as needed)
         const content = document.createElement("span");
-        content.textContent = JSON.stringify(row);
+        const frid=row.targetId;
+        const frelo=await getELO(frid);
+        content.textContent = `${await getName(frid)}    ELO:${frelo}`;
 
 
         // Create the X button
@@ -67,7 +74,9 @@ async function getInc() {
 
         // Display the row's content (customize as needed)
         const content = document.createElement("span");
-        content.textContent = JSON.stringify(row);
+        const frid=row.sourceId;
+        const frelo=await getELO(frid);
+        content.textContent = `${await getName(frid)}    ELO:${frelo}`;
 
         // Create the checkmark button
         const checkButton = document.createElement("button");
@@ -103,7 +112,9 @@ async function getFriend() {
 
         // Display the row's content (customize as needed)
         const content = document.createElement("span");
-        content.textContent = JSON.stringify(row);
+        const frid=row.userid;
+        const frelo=await getELO(frid);
+        content.textContent = `${await getName(frid)}    ELO:${frelo}`;
 
 
         // Create the X button
@@ -124,6 +135,7 @@ async function getFriend() {
 async function updateStats() {
     try {
         const stats = await getWinLoss(userId);
+        const elo = await getELO(userId);
         if (stats) {
             document.getElementById('winLossStats').textContent =
                 `Wins: ${stats.wins} | Losses: ${stats.losses}`;
@@ -137,29 +149,38 @@ async function updateStats() {
             document.getElementById('winLossStats').textContent +=
                 ` | Win Rate: ${winRate}%`;
         }
+        if (elo) {
+            document.getElementById('playerElo').textContent =
+                `ELO: ${elo}`;
+        }
     } catch (error) {
         console.error('Error fetching stats:', error);
     }
 }
 
+async function updateFriendStuff() {
+    await getFriend();
+    await getPend();
+    await getInc();
+}
 
 // Initialize page
 async function initializePage() {
-    console.log("page init start")
+    console.log("page init start");
     // Get username from sessionStorage if you stored it during login
     const username = sessionStorage.getItem('username') || 'User';
     document.getElementById('username').textContent = username;
-    
-// Sign out handler
-document.getElementById('signOutBtn').addEventListener('click', () => {
-    sessionStorage.removeItem('userId');
-    window.location.href = 'index.html';
-});
+
+    // Sign out handler
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+        sessionStorage.removeItem('userId');
+        window.location.href = 'index.html';
+    });
     // Update stats
     await updateStats();
     //do the friend list stuff
-    await getFriend();
-    }
+    await updateFriendStuff();
+}
 
 // Load user data when page loads
 window.addEventListener('load', initializePage);

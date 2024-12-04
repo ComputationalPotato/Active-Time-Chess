@@ -497,6 +497,40 @@ app.post('/api/getId', async (req, res) => {
     }
 });
 
+app.post('/api/getELO', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getELO(userId);
+
+        res.json({
+            elo:result
+        });
+    } catch (error) {
+        console.error('getELO error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/getName', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getName(userId);
+
+        res.json({
+            name:result
+        });
+    } catch (error) {
+        console.error('getName error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

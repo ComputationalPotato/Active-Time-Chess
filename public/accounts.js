@@ -275,3 +275,44 @@ async function getId(username) {
         alert('An error occurred during getId');
     }
 }
+
+async function getELO(userId) {
+    try {
+        const response = await fetch('/api/getELO', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        });
+
+        const data = await response.json();
+        //console.log(data);
+        return data.elo;
+    } catch (error) {
+        console.error('get elo error:', error);
+        alert('An error occurred during get elo');
+    }
+}
+async function getName(userId) {
+    try {
+        const response = await fetch('/api/getName', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        });
+
+        const data = await response.json();
+        
+        return data.name;
+    } catch (error) {
+        console.error('get name error:', error);
+        alert('An error occurred during get name');
+    }
+}
