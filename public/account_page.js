@@ -121,7 +121,7 @@ async function getFriend() {
         const xButton = document.createElement("button");
         xButton.textContent = "✖";
         xButton.style.marginLeft = "5px";
-        xButton.onclick = async () => await handleXPend(row);
+        xButton.onclick = async () => await handleXPend({targetId:frid});
 
         // Append content and buttons to the row
         rowDiv.appendChild(content);
