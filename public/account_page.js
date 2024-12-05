@@ -152,6 +152,9 @@ async function updateStats() {
         if (elo) {
             document.getElementById('playerElo').textContent =
                 `ELO: ${elo}`;
+        } else {
+            document.getElementById('playerElo').textContent =
+                `ELO: ${0}`;
         }
     } catch (error) {
         console.error('Error fetching stats:', error);
