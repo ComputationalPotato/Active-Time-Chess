@@ -217,6 +217,7 @@ io.on('connection', (socket) => {
                 console.log(match.players);
                 console.log(`p1 id: ${match.userIds.get(match.players[0])}`)
                 console.log(match.userIds.get(match.players[1]))
+                console.log(`winner is ${match.game.winner}`)
                 if (match.game.winner == "white") {
                     incWins(match.userIds.get(match.players[0]));
                     incLosses(match.userIds.get(match.players[1]));
@@ -263,7 +264,7 @@ io.on('connection', (socket) => {
         if (!match) return;
 
         const playerColor = match.getPlayerColor(socket.id);
-        const winner = playerColor === 'white' ? 'Black' : 'White';
+        const winner = playerColor === 'white' ? 'black' : 'white';
         match.game.winner = winner;
         // Emit a game over event to declare the winner
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
