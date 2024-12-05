@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Home Page - ATChess</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
+    <script src="./accounts.js"></script>
+    <script src="./account_page.js"></script>
     <div class="main-container">
         <!-- Left Side -->
         <div class="left-side">
@@ -27,8 +31,16 @@
             </div>
 
             <div class="buttons">
-                <button class="button">Send Friend Request</button>
-                <button class="button">Pending Requests</button>
+                <button class="button" onclick="sendFreqButton()">Send Friend Request</button>
+                <input type="text" id="sendFreqName" placeholder="Type here">
+                <div>Pending Requests</div>
+                <div id="pending" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+                    <!-- Query results will be displayed here -->
+                </div>
+                <div>Incoming Requests</div>
+                <div id="incoming" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+                    <!-- Query results will be displayed here -->
+                </div>
             </div>
         </div>
 
@@ -38,62 +50,10 @@
 
             <button class="play-button" onclick="window.location.href='main_ranked.html'">Play Ranked</button>
             <button class="button" onclick="window.location.href='main.html'">Play Unranked</button>
-            <button class="button">Lobbies</button>
         </div>
     </div>
-    <script src="./accounts.js"></script>
-    <script type="module">
-        //import { getWinLoss } from './accounts.js';
-
-        // Check if user is logged in
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            window.location.href = 'index.html';
-        }
-
-        // Update user stats
-        async function updateStats() {
-            try {
-                const stats = await getWinLoss(userId);
-                if (stats) {
-                    document.getElementById('winLossStats').textContent = 
-                        `Wins: ${stats.wins} | Losses: ${stats.losses}`;
-                    
-                    // Calculate win rate
-                    const totalGames = stats.wins + stats.losses;
-                    const winRate = totalGames > 0 
-                        ? ((stats.wins / totalGames) * 100).toFixed(1) 
-                        : 0;
-                    
-                    document.getElementById('winLossStats').textContent += 
-                        ` | Win Rate: ${winRate}%`;
-                }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-            }
-        }
-
-        // Sign out handler
-        document.getElementById('signOutBtn').addEventListener('click', () => {
-            localStorage.removeItem('userId');
-            window.location.href = 'index.html';
-        });
-
-        // Initialize page
-        async function initializePage() {
-            // Get username from localStorage if you stored it during login
-            const username = localStorage.getItem('username') || 'User';
-            document.getElementById('username').textContent = username;
-            
-            // Update stats
-            await updateStats();
-            
-            // Set default messages for empty states
-            document.getElementById('friendsList').textContent = 'No friends yet';
-        }
-
-        // Load user data when page loads
-        window.addEventListener('load', initializePage);
-    </script>
+    
+    
 </body>
+
 </html>

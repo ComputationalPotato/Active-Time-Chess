@@ -60,6 +60,7 @@ export async function incWins(userid) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
+        console.log("inc wins failed")
         throw e;
     } finally {
         client.release();
@@ -91,6 +92,7 @@ export async function incLosses(userid) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
+        console.log("inc losses failed")
         throw e;
     } finally {
         client.release();
@@ -142,6 +144,10 @@ export async function getELO(userId) {
 }
 
 export async function updateELO(userId1,elo1,userId2,elo2) {
+    if(!userId1||!userId2 ||!elo1 ||!elo2)
+    {
+        return false;
+    }
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -154,6 +160,143 @@ export async function updateELO(userId1,elo1,userId2,elo2) {
             await client.query('COMMIT');
             return true;
     } catch (e) {
+        console.log("sql error")
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getName(userId) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT username FROM users WHERE userid = $1';
+            const res = await client.query(queryText, [userId]);
+        
+            if (res.rows.length > 0) {
+              const  name  = res.rows[0]["username"];
+              console.log(`User ${userId} - name: ${name}`);
+              return name;
+            } else {
+              console.log(`No user found with ID ${userId}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+export async function getId(username) {
+    let client = await pool.connect();
+    try {
+            // Use a parameterized query to fetch wins and losses
+            const queryText = 'SELECT userid FROM users WHERE username = $1';
+            const res = await client.query(queryText, [username]);
+        
+            if (res.rows.length > 0) {
+              const  id  = res.rows[0]["userid"];
+              /* console.log(res.rows);
+              console.log(res.rows[0]);
+              console.log(res.rows[0][0]);
+              console.log(Object.keys(res.rows[0])); // This will print the actual column names
+              console.log(res.rows[0]["userid"]); */
+              console.log(`User ${username} - id: ${id}`);
+              return id;
+            } else {
+              console.log(`No user found with name ${username}`);
+              return null;
+            }
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+//send friend request. creates friendship object with userId as source and targetId as target
+//a user accepts a friend request by sending a request to the requester
+export async function sendFreq(userId,targetId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'insert into public.friendship("sourceId","targetId") values($1,$2)';
+        const res = await client.query(queryText, [userId,targetId]);
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getSentFreqs(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'select "targetId" from public.friendship where "sourceId" = $1';
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getIncomingFreqs(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = 'select "sourceId" from public.friendship where "targetId" = $1';
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+//get friend requests that have been accepted
+export async function getFriends(userId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const queryText = `select u2.userid from public.users u 
+inner join public.friendship f on u.userid = f."sourceId" 
+inner join public.friendship f2 on f2."sourceId" = f."targetId" and f2."targetId" =f."sourceId"
+inner join public.users u2 on u2.userid =f2."sourceId" 
+where u.userid=$1`;
+        const res = await client.query(queryText, [userId]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function deleteFriend(userId,targetId) {
+    let client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        let queryText = `delete from public.friendship f where f."sourceId" = $1 and f."targetId"=$2`;
+        let res = await client.query(queryText, [userId,targetId]);
+        queryText = `delete from public.friendship f where f."targetId" = $1 and f."sourceId"=$2`;
+        res = await client.query(queryText, [userId,targetId]);
+
+        await client.query('COMMIT');
+        return true;
+    } catch (e) {
+        await client.query('ROLLBACK');
         throw e;
     } finally {
         client.release();
