@@ -1,6 +1,6 @@
 import {Game} from './gamelogic.js'
-//    import { ChessBoard } from 'chessboardjs';
-//    import { io } from "socket.io-client";
+import { createElement } from 'react';
+
 var ranked = document.getElementsByName('isranked')[0]?.content == "true";
 console.log(ranked);
 let game= new Game();
@@ -82,7 +82,28 @@ socket.on('gameJoined', (data) => {
     playerColor = data.color;
     board.orientation(data.color);
     board.position(data.position);
-    // Apply any existing cooldowns without resetting animations
+    
+    // Create matchmaking overlay if waiting for opponent
+    if (data.waiting) {
+        matchmakingOverlay = createMatchmakingOverlay();
+        
+        // Start countdown
+        const countdownEl = document.getElementById('countdown');
+        let timeLeft = 60; // 60 seconds matchmaking timeout
+        
+        countdownInterval = setInterval(() => {
+            countdownEl.textContent = timeLeft;
+            timeLeft--;
+            
+            if (timeLeft < 0) {
+                clearInterval(countdownInterval);
+                // Handle matchmaking timeout
+                socket.emit('matchmakingTimeout');
+            }
+        }, 1000);
+    }
+    
+    // Apply any existing cooldowns
     data.cooldowns.forEach(([square, time]) => {
         if (Date.now() < time && !document.getElementById(`cooldown-${square}`)) {
             game.pieceCooldowns.set(square, time);
@@ -289,3 +310,54 @@ function updateOverlaySize() {
     overlay.setAttribute('height', boardElement.offsetHeight);
     squareSize = boardElement.offsetWidth / 8;
 }
+
+// Matchmaking overlay before two players have joined
+function createMatchmakingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'matchmaking-overlay';
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50';
+    
+    const content = document.createElement('div');
+    content.className = 'text-white text-center';
+    content.innerHTML = `
+        <h2 class="text-3xl mb-4">Matchmaking</h2>
+        <p class="mb-4">Waiting for opponent...</p>
+        <div id="countdown" class="text-6xl"></div>
+    `;
+    
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+// Modify the socket connection logic
+let matchmakingOverlay = null;
+let countdownInterval = null;
+
+socket.on('gameStart', (data) => {
+    // Remove matchmaking overlay
+    if (matchmakingOverlay) {
+        matchmakingOverlay.remove();
+        matchmakingOverlay = null;
+    }
+    
+    // Clear any existing countdown interval
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    
+    // Set initial board position
+    board.position(data.position);
+    
+    // Apply any existing cooldowns
+    data.cooldowns.forEach(([square, time]) => {
+        if (Date.now() < time && !document.getElementById(`cooldown-${square}`)) {
+            game.pieceCooldowns.set(square, time);
+            const piece = board.position()[square];
+            if (piece) {
+                updateCooldownCircle(piece, square);
+            }
+        }
+    });
+});

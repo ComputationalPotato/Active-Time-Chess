@@ -35,6 +35,7 @@ class Match {
     players: string[];
     spectators: Set<string>;
     ranked:boolean;
+    waiting: boolean = true;
     constructor(id: string, ranked=false) {
         this.id = id;
         this.players = [];
@@ -47,9 +48,16 @@ class Match {
     addPlayer(socketId: string, userId: string) {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
-        this.userIds.set(socketId,userId)
+        this.userIds.set(socketId, userId);
+        
+        // If this is the second player, mark game as no longer waiting
+        if (this.players.length === 2) {
+            this.waiting = false;
+        }
+        
         return true;
     }
+
 
     removePlayer(socketId) {
         this.players = this.players.filter(id => id !== socketId);
@@ -116,13 +124,13 @@ io.on('connection', (socket) => {
         if (joined) {
             playerMatches.set(socket.id, gameId);
             socket.join(gameId);
-
+    
             const color = match.getPlayerColor(socket.id);
-            //TODO make it send more. like full game i guess. do it for all of them
             socket.emit('gameJoined', {
                 color,
                 position: match.game.position,
-                cooldowns: Array.from(match.game.pieceCooldowns.entries())
+                cooldowns: Array.from(match.game.pieceCooldowns.entries()),
+                waiting: match.waiting // Pass waiting status
             });
 
             // Start game if we have two players
@@ -132,7 +140,7 @@ io.on('connection', (socket) => {
                     cooldowns: Array.from(match.game.pieceCooldowns.entries())
                 });
             }
-        } else {
+        } else {    
             // Handle spectator
             match.addSpectator(socket.id);
             socket.join(gameId);
@@ -264,7 +272,20 @@ io.on('connection', (socket) => {
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
     });
 
-
+    socket.on('matchmakingTimeout', () => {
+        const gameId = playerMatches.get(socket.id);
+        if (!gameId) return;
+    
+        const match = matches.get(gameId);
+        if (!match) return;
+    
+        // If only one player, remove the game
+        if (match.players.length < 2) {
+            matches.delete(gameId);
+            playerMatches.delete(socket.id);
+            socket.emit('matchmakingFailed');
+        }
+    });
 
 
     socket.on('disconnect', () => {
@@ -289,6 +310,7 @@ io.on('connection', (socket) => {
         }
     });
 });
+
 
 
 
