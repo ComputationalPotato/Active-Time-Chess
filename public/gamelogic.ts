@@ -65,7 +65,7 @@ export class Game {
     checkForKingCapture(target) {
         const targetPiece = this.position[target];
         if (targetPiece && targetPiece.toLowerCase().includes('k')) {
-            this.winner = targetPiece.charAt(0) === 'w' ? 'Black' : 'White';
+            this.winner = targetPiece.charAt(0) === 'w' ? 'black' : 'white';
             //setTimeout(() => this.showGameEndMessage(winner), 100); // Small delay to ensure move completes
             return true;
         }
@@ -125,7 +125,7 @@ export class Game {
      */
     isLegalMove(source, target, piece) {
         // If game has ended, no moves are legal
-        if (this.winner != null) {
+        if (this.winner != null || this.gameEnded) {
             return false;
         }
 

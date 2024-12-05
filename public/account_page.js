@@ -141,7 +141,7 @@ async function updateStats() {
                 `Wins: ${stats.wins} | Losses: ${stats.losses}`;
 
             // Calculate win rate
-            const totalGames = stats.wins + stats.losses;
+            const totalGames = Number(stats.wins) + Number(stats.losses);
             const winRate = totalGames > 0
                 ? ((stats.wins / totalGames) * 100).toFixed(1)
                 : 0;

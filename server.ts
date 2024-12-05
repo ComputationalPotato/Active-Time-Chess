@@ -214,23 +214,30 @@ io.on('connection', (socket) => {
             target,
             piece,
             position: match.game.position,
+            winner: match.game.winner,
             cooldowns: Array.from(match.game.pieceCooldowns.entries())
         });
         if (match.game.winner) {
             console.log("game won");
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
-            if(match.game.winner=="white")
-            {
-                incWins(match.userIds[match.players[0]]);
-                incLosses(match.userIds[match.players[1]]);
+            if (match.ranked) {
+                console.log(match.ranked)
+                console.log(match.userIds.entries());
+                console.log(match.players);
+                console.log(`p1 id: ${match.userIds.get(match.players[0])}`)
+                console.log(match.userIds.get(match.players[1]))
+                console.log(`winner is ${match.game.winner}`)
+                if (match.game.winner == "white") {
+                    incWins(match.userIds.get(match.players[0]));
+                    incLosses(match.userIds.get(match.players[1]));
+                }
+                else {
+                    incLosses(match.userIds.get(match.players[0]));
+                    incWins(match.userIds.get(match.players[1]));
+                }
+                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds.get(match.players[0])), await getELO(match.userIds.get(match.players[1])), match.game.winner == "white");
+                updateELO(match.userIds.get(match.players[0]), p1elo, match.userIds.get(match.players[1]), p2elo);
             }
-            else
-            {
-                incLosses(match.userIds[match.players[0]]);
-                incWins(match.userIds[match.players[1]]);
-            }
-            let [p1elo,p2elo]=eloCalc(getELO(match.userIds[match.players[0]]),getELO(match.userIds[match.players[1]]),match.game.winner=="white");
-            updateELO(match.userIds[match.players[0]],p1elo,match.userIds[match.players[1]],p2elo);
         }
     });
 
@@ -266,7 +273,7 @@ io.on('connection', (socket) => {
         if (!match) return;
 
         const playerColor = match.getPlayerColor(socket.id);
-        const winner = playerColor === 'white' ? 'Black' : 'White';
+        const winner = playerColor === 'white' ? 'black' : 'white';
         match.game.winner = winner;
         // Emit a game over event to declare the winner
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
