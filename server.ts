@@ -205,6 +205,7 @@ io.on('connection', (socket) => {
             target,
             piece,
             position: match.game.position,
+            winner: match.game.winner,
             cooldowns: Array.from(match.game.pieceCooldowns.entries())
         });
         if (match.game.winner) {

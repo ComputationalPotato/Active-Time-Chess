@@ -96,6 +96,7 @@ socket.on('gameJoined', (data) => {
 
 socket.on('moveMade', (data) => {
     game.position = {...data.position};
+    game.winner= data.winner;
     board.position(game.position);
     
     // Only apply new cooldowns that don't already have animations
