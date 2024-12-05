@@ -226,7 +226,7 @@ export async function sendFreq(userId,targetId) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
-        throw e;
+        return false;
     } finally {
         client.release();
     }
@@ -242,7 +242,7 @@ export async function getSentFreqs(userId) {
         return res.rows;
     } catch (e) {
         await client.query('ROLLBACK');
-        throw e;
+        return null;
     } finally {
         client.release();
     }
@@ -258,7 +258,7 @@ export async function getIncomingFreqs(userId) {
         return res.rows;
     } catch (e) {
         await client.query('ROLLBACK');
-        throw e;
+        return null;
     } finally {
         client.release();
     }
@@ -278,7 +278,7 @@ where u.userid=$1`;
         return res.rows;
     } catch (e) {
         await client.query('ROLLBACK');
-        throw e;
+        return null;
     } finally {
         client.release();
     }
@@ -297,7 +297,7 @@ export async function deleteFriend(userId,targetId) {
         return true;
     } catch (e) {
         await client.query('ROLLBACK');
-        throw e;
+        return;
     } finally {
         client.release();
     }

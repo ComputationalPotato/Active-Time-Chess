@@ -1,5 +1,5 @@
 import {Game} from './gamelogic.js'
-import { createElement } from 'react';
+//import { createElement } from 'react';
 
     var ranked = document.getElementsByName('isranked')[0]?.content === "true";
     console.log(ranked);
