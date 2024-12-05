@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getELO, updateELO } from './public/database.js'
+import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getName,getId,getELO, updateELO,sendFreq,getSentFreqs,getIncomingFreqs,getFriends,deleteFriend } from './public/database.js'
 
 import { Game } from "./public/gamelogic.js"
 import Elo from 'arpad';
@@ -31,33 +31,25 @@ const COOLDOWN_TIME = 3000; // 3 seconds to match client // 3 seconds to match c
 class Match {
     game: Game;
     id: string;
-    userIds:Map<string,string>;
+    userIds: Map<string, string>;
     players: string[];
     spectators: Set<string>;
-    ranked:boolean;
-    waiting: boolean = true;
-    constructor(id: string, ranked=false) {
+    ranked: boolean;
+    constructor(id: string, ranked = false) {
         this.id = id;
         this.players = [];
-        this.userIds=new Map();
+        this.userIds = new Map();
         this.game = new Game();
         this.spectators = new Set();
-        this.ranked=ranked;
+        this.ranked = ranked;
     }
 
     addPlayer(socketId: string, userId: string) {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
-        this.userIds.set(socketId, userId);
-        
-        // If this is the second player, mark game as no longer waiting
-        if (this.players.length === 2) {
-            this.waiting = false;
-        }
-        
+        this.userIds.set(socketId, userId)
         return true;
     }
-
 
     removePlayer(socketId) {
         this.players = this.players.filter(id => id !== socketId);
@@ -89,14 +81,13 @@ class Match {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('lfg', (ranked,userId,callback) => {
+    socket.on('lfg', async (ranked, userId, callback) => {
         console.log("got lfg");
         for (let [id, g] of matches.entries()) {
             console.log(g)
             console.log(g.players.length)
-            if (g.players.length < 2) {
-                if(g.ranked!=ranked ||(ranked && Math.abs(getELO(g.userIds.get(g.players[0]))-getELO(userId))>100))
-                {
+            if (g.players.length < 2 && g.game.winner == null) {
+                if (g.ranked != ranked || (ranked && Math.abs(await getELO(g.userIds.get(g.players[0])) - await getELO(userId)) > 100)) {
                     continue;
                 }
                 console.log('found open game');
@@ -109,28 +100,28 @@ io.on('connection', (socket) => {
         callback({ gameId: Math.random().toString(36).substring(7) });
     });
 
-    socket.on('joinGame', (gameId,userId,ranked) => {
+    socket.on('joinGame', (gameId, userId, ranked) => {
         // Create or join game
         if (!matches.has(gameId)) {
-            matches.set(gameId, new Match(gameId,ranked));
+            matches.set(gameId, new Match(gameId, ranked));
         }
 
         const match = matches.get(gameId);
         if (!match) {
             throw "created game vanished";
         }
-        const joined = match.addPlayer(socket.id,userId);
+        const joined = match.addPlayer(socket.id, userId);
 
         if (joined) {
             playerMatches.set(socket.id, gameId);
             socket.join(gameId);
-    
+
             const color = match.getPlayerColor(socket.id);
+            //TODO make it send more. like full game i guess. do it for all of them
             socket.emit('gameJoined', {
                 color,
                 position: match.game.position,
-                cooldowns: Array.from(match.game.pieceCooldowns.entries()),
-                waiting: match.waiting // Pass waiting status
+                cooldowns: Array.from(match.game.pieceCooldowns.entries())
             });
 
             // Start game if we have two players
@@ -140,7 +131,7 @@ io.on('connection', (socket) => {
                     cooldowns: Array.from(match.game.pieceCooldowns.entries())
                 });
             }
-        } else {    
+        } else {
             // Handle spectator
             match.addSpectator(socket.id);
             socket.join(gameId);
@@ -181,7 +172,7 @@ io.on('connection', (socket) => {
 
 
 
-    socket.on('move', (data) => {
+    socket.on('move', async (data) => {
         const matchId = playerMatches.get(socket.id);
         if (!matchId) return;
 
@@ -248,9 +239,9 @@ io.on('connection', (socket) => {
         const match = matches.get(matchId);
         if (!match) return;
 
-        match.game.position = Game.startPos;
+        match.game.position = {...Game.startPos};
         match.game.pieceCooldowns.clear();
-        io.to(matchId).emit('boardReset', { position: Game.startPos });
+        io.to(matchId).emit('boardReset', { position: {...Game.startPos} });
     });
 
     socket.on('clearBoard', () => {
@@ -279,20 +270,7 @@ io.on('connection', (socket) => {
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
     });
 
-    socket.on('matchmakingTimeout', () => {
-        const gameId = playerMatches.get(socket.id);
-        if (!gameId) return;
-    
-        const match = matches.get(gameId);
-        if (!match) return;
-    
-        // If only one player, remove the game
-        if (match.players.length < 2) {
-            matches.delete(gameId);
-            playerMatches.delete(socket.id);
-            socket.emit('matchmakingFailed');
-        }
-    });
+
 
 
     socket.on('disconnect', () => {
@@ -317,7 +295,6 @@ io.on('connection', (socket) => {
         }
     });
 });
-
 
 
 
@@ -425,6 +402,136 @@ app.post('/api/getWinLoss', async (req, res) => {
         });
     }
 });
+app.post('/api/sendFreq', async (req, res) => {
+    try {
+        const { userId, targetId } = req.body;
+        const success= await sendFreq(userId,targetId);
+
+        res.json({
+            success:success
+        });
+    } catch (error) {
+        console.error('sendFreq error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getSentFreqs', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getSentFreqs(userId);
+
+        res.json({
+            freqs:result
+        });
+    } catch (error) {
+        console.error('getSentFreqs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getIncomingFreqs', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getIncomingFreqs(userId);
+
+        res.json({
+            freqs:result
+        });
+    } catch (error) {
+        console.error('getIncomingFreqs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getFriends', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getFriends(userId);
+
+        res.json({
+            freqs:result
+        });
+    } catch (error) {
+        console.error('getFriends error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/deleteFriend', async (req, res) => {
+    try {
+        const { userId, targetId } = req.body;
+        const success= await deleteFriend(userId,targetId);
+
+        res.json({
+            success:success
+        });
+    } catch (error) {
+        console.error('deleteFriend error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+app.post('/api/getId', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const result= await getId(username);
+
+        res.json({
+            id:result
+        });
+    } catch (error) {
+        console.error('getId error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/getELO', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getELO(userId);
+
+        res.json({
+            elo:result
+        });
+    } catch (error) {
+        console.error('getELO error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
+
+app.post('/api/getName', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const result= await getName(userId);
+
+        res.json({
+            name:result
+        });
+    } catch (error) {
+        console.error('getName error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error occurred'
+        });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
@@ -436,8 +543,7 @@ function eloCalc(p1ELO: number, p2ELO: number, p1won: boolean) {
     if (p1won) {
         return [elo.newRatingIfWon(p1ELO, p2ELO), elo.newRatingIfLost(p2ELO, p1ELO)];
     }
-    else
-    {
+    else {
         return [elo.newRatingIfLost(p1ELO, p2ELO), elo.newRatingIfWon(p2ELO, p1ELO)];
     }
 }
