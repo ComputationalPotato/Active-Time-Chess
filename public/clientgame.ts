@@ -1,6 +1,6 @@
 import {Game} from './gamelogic.js'
-//import { createElement } from 'react';
-
+//    import { ChessBoard } from 'chessboardjs';
+//    import { io } from "socket.io-client";
     var ranked = document.getElementsByName('isranked')[0]?.content === "true";
     console.log(ranked);
     let game= new Game();
@@ -76,33 +76,13 @@ if (!window.location.search.includes('game=')) {
 
 // Socket event handlers
 
+
 socket.on('gameJoined', (data) => {
     console.log('Joined game as', data.color);
     playerColor = data.color;
     board.orientation(data.color);
     board.position(data.position);
-    
-    // Create matchmaking overlay if waiting for opponent
-    if (data.waiting) {
-        matchmakingOverlay = createMatchmakingOverlay();
-        
-        // Start countdown
-        const countdownEl = document.getElementById('countdown');
-        let timeLeft = 60; // 60 seconds matchmaking timeout
-        
-        countdownInterval = setInterval(() => {
-            countdownEl.textContent = timeLeft;
-            timeLeft--;
-            
-            if (timeLeft < 0) {
-                clearInterval(countdownInterval);
-                // Handle matchmaking timeout
-                socket.emit('matchmakingTimeout');
-            }
-        }, 1000);
-    }
-    
-    // Apply any existing cooldowns
+    // Apply any existing cooldowns without resetting animations
     data.cooldowns.forEach(([square, time]) => {
         if (Date.now() < time && !document.getElementById(`cooldown-${square}`)) {
             game.pieceCooldowns.set(square, time);
@@ -214,26 +194,26 @@ function showGameEndMessage(winner, method = "capture") {
     const messageContainer = document.createElement('div');
     messageContainer.className = 'game-end-message';
 
-    const messageContent = document.createElement('div');
-    if (method === "draw") {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>The game ended in a draw.</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    } else if (method === "resign") {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by resignation!</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    } else {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by capturing the king!</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    }
+        const messageContent = document.createElement('div');
+        if (method === "draw") {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>The game ended in a draw.</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        } else if (method === "resign") {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by resignation!</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        } else {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by capturing the king!</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        }
 
 
     // Add message to page
@@ -243,14 +223,14 @@ function showGameEndMessage(winner, method = "capture") {
     // Disable further moves
     game.gameEnded = true;
 
-    // Add click outside to dismiss
-    document.addEventListener('click', function closeMessage(e) {
-        if (!messageContainer.contains(e.target)) {
-            messageContainer.remove();
-            document.removeEventListener('click', closeMessage);
-        }
-    });
-}
+        /* // Add click outside to dismiss
+        document.addEventListener('click', function closeMessage(e) {
+            if (!messageContainer.contains(e.target)) {
+                messageContainer.remove();
+                document.removeEventListener('click', closeMessage);
+            }
+        }); */
+    }
 
 /**
  * @param {string} piece
@@ -303,61 +283,11 @@ function updateCooldownCircle(piece: string, square: string) {
     }, cooldownTime);
 }
 
-function updateOverlaySize() {
-    const boardElement = document.querySelector('.board-container');
-    const overlay = document.getElementById('cooldownOverlay');
-    overlay.setAttribute('width', boardElement.offsetWidth);
-    overlay.setAttribute('height', boardElement.offsetHeight);
-    squareSize = boardElement.offsetWidth / 8;
-}
-
-// Matchmaking overlay before two players have joined
-function createMatchmakingOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'matchmaking-overlay';
-    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50';
-    
-    const content = document.createElement('div');
-    content.className = 'text-white text-center';
-    content.innerHTML = `
-        <h2 class="text-3xl mb-4">Matchmaking</h2>
-        <p class="mb-4">Waiting for opponent...</p>
-        <div id="countdown" class="text-6xl"></div>
-    `;
-    
-    overlay.appendChild(content);
-    document.body.appendChild(overlay);
-    return overlay;
-}
-
-// Modify the socket connection logic
-let matchmakingOverlay = null;
-let countdownInterval = null;
-
-socket.on('gameStart', (data) => {
-    // Remove matchmaking overlay
-    if (matchmakingOverlay) {
-        matchmakingOverlay.remove();
-        matchmakingOverlay = null;
+    function updateOverlaySize() {
+        const boardElement = document.querySelector('.board-container');
+        const overlay = document.getElementById('cooldownOverlay');
+        overlay.setAttribute('width', boardElement.offsetWidth);
+        overlay.setAttribute('height', boardElement.offsetHeight);
+        squareSize = boardElement.offsetWidth / 8;
     }
     
-    // Clear any existing countdown interval
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
-    
-    // Set initial board position
-    board.position(data.position);
-    
-    // Apply any existing cooldowns
-    data.cooldowns.forEach(([square, time]) => {
-        if (Date.now() < time && !document.getElementById(`cooldown-${square}`)) {
-            game.pieceCooldowns.set(square, time);
-            const piece = board.position()[square];
-            if (piece) {
-                updateCooldownCircle(piece, square);
-            }
-        }
-    });
-});
