@@ -1,20 +1,20 @@
 import {Game} from './gamelogic.js'
 //    import { ChessBoard } from 'chessboardjs';
 //    import { io } from "socket.io-client";
-var ranked = document.getElementsByName('isranked')[0]?.content == "true";
-console.log(ranked);
-let game= new Game();
-let board = null;
-const COOLDOWN_TIME = 3000;
-//const pieceCooldowns = new Map();
-let squareSize = 0;
-let playerColor = 'white'; // Default color
-let userId=sessionStorage.getItem("userId");
-var config = {
-    draggable: true,
-    position: 'start',
-    onDrop: function (source, target, piece, newPos, oldPos, orientation) {
-        console.log('Attempting move from ' + source + ' to ' + target);
+    var ranked = document.getElementsByName('isranked')[0]?.content === "true";
+    console.log(ranked);
+    let game= new Game();
+    let board = null;
+    const COOLDOWN_TIME = 3000;
+    //const pieceCooldowns = new Map();
+    let squareSize = 0;
+    let playerColor = 'white'; // Default color
+    let userId=sessionStorage.getItem("userId");
+    var config = {
+        draggable: true,
+        position: 'start',
+        onDrop: function (source, target, piece, newPos, oldPos, orientation) {
+            console.log('Attempting move from ' + source + ' to ' + target);
 
         if (!game.tryMove(source, target, piece)) {
             console.log('Illegal move attempted');
@@ -193,26 +193,26 @@ function showGameEndMessage(winner, method = "capture") {
     const messageContainer = document.createElement('div');
     messageContainer.className = 'game-end-message';
 
-    const messageContent = document.createElement('div');
-    if (method === "draw") {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>The game ended in a draw.</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    } else if (method === "resign") {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by resignation!</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    } else {
-        messageContent.innerHTML = `
-        <h2>Game Over!</h2>
-        <p>${winner} wins by capturing the king!</p>
-        <button onclick="location.reload()">Close</button>
-    `;
-    }
+        const messageContent = document.createElement('div');
+        if (method === "draw") {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>The game ended in a draw.</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        } else if (method === "resign") {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by resignation!</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        } else {
+            messageContent.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>${winner} wins by capturing the king!</p>
+            <button onclick="location.replace('/account.html')">Close</button>
+        `;
+        }
 
 
     // Add message to page
@@ -222,14 +222,14 @@ function showGameEndMessage(winner, method = "capture") {
     // Disable further moves
     game.gameEnded = true;
 
-    // Add click outside to dismiss
-    document.addEventListener('click', function closeMessage(e) {
-        if (!messageContainer.contains(e.target)) {
-            messageContainer.remove();
-            document.removeEventListener('click', closeMessage);
-        }
-    });
-}
+        /* // Add click outside to dismiss
+        document.addEventListener('click', function closeMessage(e) {
+            if (!messageContainer.contains(e.target)) {
+                messageContainer.remove();
+                document.removeEventListener('click', closeMessage);
+            }
+        }); */
+    }
 
 /**
  * @param {string} piece
@@ -282,10 +282,11 @@ function updateCooldownCircle(piece: string, square: string) {
     }, cooldownTime);
 }
 
-function updateOverlaySize() {
-    const boardElement = document.querySelector('.board-container');
-    const overlay = document.getElementById('cooldownOverlay');
-    overlay.setAttribute('width', boardElement.offsetWidth);
-    overlay.setAttribute('height', boardElement.offsetHeight);
-    squareSize = boardElement.offsetWidth / 8;
-}
+    function updateOverlaySize() {
+        const boardElement = document.querySelector('.board-container');
+        const overlay = document.getElementById('cooldownOverlay');
+        overlay.setAttribute('width', boardElement.offsetWidth);
+        overlay.setAttribute('height', boardElement.offsetHeight);
+        squareSize = boardElement.offsetWidth / 8;
+    }
+    

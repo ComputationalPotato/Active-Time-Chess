@@ -2,7 +2,7 @@
 
 export class Game {
     //make const after switch to typescript
-    static startPos = {
+    static readonly startPos = {
         "a8": "bR",
         "b8": "bN",
         "c8": "bB",
@@ -36,6 +36,7 @@ export class Game {
         "g1": "wN",
         "h1": "wR"
     };
+    static _=Object.freeze(this.startPos);
     position:object;
     pieceCooldowns: Map<string, number>;
     winner: string|null;
@@ -124,7 +125,7 @@ export class Game {
      */
     isLegalMove(source, target, piece) {
         // If game has ended, no moves are legal
-        if (this.gameEnded) {
+        if (this.winner != null) {
             return false;
         }
 
@@ -175,7 +176,7 @@ export class Game {
                     }
                     return false;
                 } else {
-                    if (colDiff === 1 && rowFrom - rowTo === 1 && targetPiece) {
+                    if (colDiff === 1 && rowDiff === 1 && targetPiece) {
                         return true;
                     }
                     if (colDiff === 0 && !targetPiece) {

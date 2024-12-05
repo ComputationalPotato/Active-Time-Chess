@@ -38,8 +38,6 @@
         </div>
         
         <div class="button-container">
-            <button id="startBtn">Start Position</button>
-            <button id="clearBtn">Clear Board</button>
             <button id="resignBtn">Resign</button>
             <button id="drawBtn">Request Draw</button>
         </div>
@@ -54,7 +52,7 @@
     <script type="module">
         //import { getWinLoss, incWins, incLosses } from './accounts.js';
 
-        // Get the current user's ID from localStorage
+        // Get the current user's ID from sessionStorage
         const userId = sessionStorage.getItem('userId');
         
         // Function to update player stats
