@@ -132,9 +132,10 @@ io.on('connection', (socket) => {
                 });
             }
         } else {
+            //got rid of spectators
             // Handle spectator
-            match.addSpectator(socket.id);
-            socket.join(gameId);
+            //match.addSpectator(socket.id);
+            //socket.join(gameId);
             socket.emit('spectatorJoined', {
                 position: match.game.position,
                 cooldowns: Array.from(match.game.pieceCooldowns.entries())

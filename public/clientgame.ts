@@ -94,6 +94,11 @@ socket.on('gameJoined', (data) => {
     });
 });
 
+socket.on('spectatorJoined', (data) => {
+    console.log('spectator. try again');
+    window.location.href=window.location.href.split('?')[0];
+});
+
 socket.on('moveMade', (data) => {
     game.position = {...data.position};
     game.winner= data.winner;
