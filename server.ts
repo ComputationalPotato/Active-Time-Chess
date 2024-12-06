@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
             console.log(g)
             console.log(g.players.length)
             if (g.players.length < 2 && g.game.winner == null) {
-                if (g.ranked != ranked || (ranked && Math.abs(await getELO(g.userIds.get(g.players[0])) - await getELO(userId)) > 100)) {
+                if (g.ranked != ranked || (ranked && Math.abs(await getELO(g.userIds.get(g.players[0])) - await getELO(userId)) > 300)) {
                     continue;
                 }
                 console.log('found open game');
