@@ -139,9 +139,10 @@ io.on('connection', (socket) => {
                 });
             }
         } else {    
+            //spectators removed. this just tells client to reload
             // Handle spectator
-            match.addSpectator(socket.id);
-            socket.join(gameId);
+            //match.addSpectator(socket.id);
+            //socket.join(gameId);
             socket.emit('spectatorJoined', {
                 position: match.game.position,
                 cooldowns: Array.from(match.game.pieceCooldowns.entries())
