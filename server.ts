@@ -35,6 +35,7 @@ class Match {
     players: string[];
     spectators: Set<string>;
     ranked: boolean;
+    waiting: boolean = true;
     constructor(id: string, ranked = false) {
         this.id = id;
         this.players = [];
@@ -47,7 +48,13 @@ class Match {
     addPlayer(socketId: string, userId: string) {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
-        this.userIds.set(socketId, userId)
+        this.userIds.set(socketId, userId);
+        
+        // If this is the second player, mark game as no longer waiting
+        if (this.players.length === 2) {
+            this.waiting = false;
+        }
+        
         return true;
     }
 
@@ -100,28 +107,28 @@ io.on('connection', (socket) => {
         callback({ gameId: Math.random().toString(36).substring(7) });
     });
 
-    socket.on('joinGame', (gameId, userId, ranked) => {
+    socket.on('joinGame', (gameId,userId,ranked) => {
         // Create or join game
         if (!matches.has(gameId)) {
-            matches.set(gameId, new Match(gameId, ranked));
+            matches.set(gameId, new Match(gameId,ranked));
         }
 
         const match = matches.get(gameId);
         if (!match) {
             throw "created game vanished";
         }
-        const joined = match.addPlayer(socket.id, userId);
+        const joined = match.addPlayer(socket.id,userId);
 
         if (joined) {
             playerMatches.set(socket.id, gameId);
             socket.join(gameId);
-
+    
             const color = match.getPlayerColor(socket.id);
-            //TODO make it send more. like full game i guess. do it for all of them
             socket.emit('gameJoined', {
                 color,
                 position: match.game.position,
-                cooldowns: Array.from(match.game.pieceCooldowns.entries())
+                cooldowns: Array.from(match.game.pieceCooldowns.entries()),
+                waiting: match.waiting // Pass waiting status
             });
 
             // Start game if we have two players
@@ -131,18 +138,16 @@ io.on('connection', (socket) => {
                     cooldowns: Array.from(match.game.pieceCooldowns.entries())
                 });
             }
-        } else {
-            //got rid of spectators
+        } else {    
             // Handle spectator
-            //match.addSpectator(socket.id);
-            //socket.join(gameId);
+            match.addSpectator(socket.id);
+            socket.join(gameId);
             socket.emit('spectatorJoined', {
                 position: match.game.position,
                 cooldowns: Array.from(match.game.pieceCooldowns.entries())
             });
         }
     });
-
     socket.on('requestDraw', () => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
@@ -192,14 +197,7 @@ io.on('connection', (socket) => {
         else if (!match.game.tryMove(source, target, piece)) {
             console.log('Illegal move attempted');
         }
-        //handled in Game()
-        /*         // Check cooldown
-                if (match.isPieceOnCooldown(source)) return;
-        
-                // Set cooldown and update position
-                match.setCooldown(target);
-                match.position = newPosition;
-         */
+
         // Broadcast move to all players and spectators
         io.to(matchId).emit('moveMade', {
             source,
@@ -271,8 +269,20 @@ io.on('connection', (socket) => {
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
     });
 
-
-
+    socket.on('matchmakingTimeout', () => {
+        const gameId = playerMatches.get(socket.id);
+        if (!gameId) return;
+    
+        const match = matches.get(gameId);
+        if (!match) return;
+    
+        // If only one player, remove the game
+        if (match.players.length < 2) {
+            matches.delete(gameId);
+            playerMatches.delete(socket.id);
+            socket.emit('matchmakingFailed');
+        }
+    });
 
     socket.on('disconnect', () => {
         const gameId = playerMatches.get(socket.id);
