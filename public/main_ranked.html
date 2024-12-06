@@ -12,8 +12,7 @@
         <div class="player-info">
             <div class="player">
                 <div class="username" id="opponent-username">Opponent</div>
-                <div class="elo" id="opponent-elo">(1500)</div>
-                <div class="stats" id="opponent-stats">W: 0 L: 0</div>
+                
             </div>
         </div>
         
@@ -32,8 +31,7 @@
         <div class="player-info">
             <div class="player">
                 <div class="username" id="player-username">You</div>
-                <div class="elo" id="player-elo">(1500)</div>
-                <div class="stats" id="player-stats">W: 0 L: 0</div>
+                
             </div>
         </div>
         
@@ -57,6 +55,7 @@
         
         // Function to update player stats
         async function updatePlayerStats() {
+            return;
             if (userId) {
                 const stats = await getWinLoss(userId);
                 if (stats) {
