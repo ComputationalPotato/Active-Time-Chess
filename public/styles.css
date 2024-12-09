@@ -106,8 +106,6 @@ button:focus {
   box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
 }
 
-
-
 .cooldown-overlay {
   top: 0;
   left: 0;
@@ -267,8 +265,6 @@ label {
   text-align: left;
 }
 
-
-
 .create-account a:hover {
   text-decoration: underline;
 }
@@ -306,7 +302,6 @@ label {
   color: #000;
 }
 
-
 .right-side .button {
   background-color: #333;
   color: #f9f4e6;
@@ -331,8 +326,6 @@ label {
 }
 
 /* Additional UI elements */
-
-
 
 .stats {
   font-size: 0.9em;
