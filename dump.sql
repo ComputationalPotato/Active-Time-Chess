@@ -105,12 +105,12 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.users (
-    username character varying NOT NULL,
-    userid bigint NOT NULL,
-    pwhash character varying NOT NULL,
-    wins bigint DEFAULT 0 NOT NULL,
-    losses bigint DEFAULT 0 NOT NULL,
-    elo integer DEFAULT 0 NOT NULL
+    username character varying NOT null,
+    userid bigint NOT null,
+    pwhash character varying NOT null,
+    wins bigint DEFAULT 0 NOT null,
+    losses bigint DEFAULT 0 NOT null,
+    elo integer DEFAULT 0 NOT null
 );
 
 
@@ -153,9 +153,9 @@ ALTER TABLE public.users ALTER COLUMN userid ADD GENERATED ALWAYS AS IDENTITY (
 --
 
 CREATE TABLE public.friendship (
-    friendshipid bigint NOT NULL,
-    "sourceId" bigint NOT NULL,
-    "targetId" bigint NOT NULL
+    friendshipid bigint NOT null,
+    "sourceId" bigint NOT null,
+    "targetId" bigint NOT null
 );
 
 
@@ -235,7 +235,7 @@ ADD CONSTRAINT user_unique UNIQUE (username);
 -- Name: friendship_friend1_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX friendship_friend1_idx ON public.friendship USING btree ("sourceId");
+CREATE INDEX friendship_friend1_idx ON public.friendship USING btree("sourceId");
 
 
 --
@@ -243,7 +243,7 @@ CREATE INDEX friendship_friend1_idx ON public.friendship USING btree ("sourceId"
 -- Name: friendship_friend2_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX friendship_friend2_idx ON public.friendship USING btree ("targetId");
+CREATE INDEX friendship_friend2_idx ON public.friendship USING btree("targetId");
 
 
 --
@@ -251,7 +251,7 @@ CREATE INDEX friendship_friend2_idx ON public.friendship USING btree ("targetId"
 -- Name: user_username_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX user_username_idx ON public.users USING btree (username);
+CREATE UNIQUE INDEX user_username_idx ON public.users USING btree(username);
 
 
 --
