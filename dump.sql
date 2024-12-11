@@ -25,8 +25,7 @@ SET row_security = off;
 -- Name: atchess; Type: DATABASE; Schema: -; Owner: -
 --
 
-CREATE DATABASE atchess WITH TEMPLATE = template0 ENCODING = 'UTF8'
-LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
+CREATE DATABASE atchess WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.UTF-8';
 
 
 \connect atchess
@@ -66,8 +65,8 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 --
 
 CREATE FUNCTION public.createaccount(uname character varying, pwhash character varying) RETURNS boolean
-    LANGUAGE plpgsql
-    AS $$
+LANGUAGE plpgsql
+AS $$
 	BEGIN
 	IF NOT EXISTS ( SELECT 1 FROM public.users WHERE users.username=uname )
 	THEN
@@ -85,8 +84,8 @@ $$;
 --
 
 CREATE FUNCTION public.trylogin(uname character varying, pwrdhash character varying) RETURNS bigint
-    LANGUAGE plpgsql
-    AS $$
+LANGUAGE plpgsql
+AS $$
 declare 
 id bigint;
 	BEGIN
@@ -166,7 +165,9 @@ CREATE TABLE public.friendship (
 -- Name: TABLE friendship; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON TABLE public.friendship IS 'linking object to link two users as friends. WARNING: you have to check both friend1 and friend 2. if person a is friends with person b, then the friendship object could have friend1 be a and friend2 be b, or it could be reversed.';
+COMMENT ON TABLE public.friendship IS 'linking object to link two users as friends. WARNING: you have to check both
+friend1 and friend 2. if person a is friends with person b, then the friendship object could have friend1 be a and
+friend2 be b, or it could be reversed.';
 
 
 --
@@ -199,7 +200,7 @@ ALTER TABLE public.friendship ALTER COLUMN friendshipid ADD GENERATED ALWAYS AS 
 --
 
 ALTER TABLE ONLY public.friendship
-    ADD CONSTRAINT friendship_pk PRIMARY KEY (friendshipid);
+ADD CONSTRAINT friendship_pk PRIMARY KEY (friendshipid);
 
 
 --
@@ -208,7 +209,7 @@ ALTER TABLE ONLY public.friendship
 --
 
 ALTER TABLE ONLY public.friendship
-    ADD CONSTRAINT friendship_unique UNIQUE ("sourceId", "targetId");
+ADD CONSTRAINT friendship_unique UNIQUE ("sourceId", "targetId");
 
 
 --
@@ -217,7 +218,7 @@ ALTER TABLE ONLY public.friendship
 --
 
 ALTER TABLE ONLY public.users
-    ADD CONSTRAINT user_pk PRIMARY KEY (userid);
+ADD CONSTRAINT user_pk PRIMARY KEY (userid);
 
 
 --
@@ -226,7 +227,7 @@ ALTER TABLE ONLY public.users
 --
 
 ALTER TABLE ONLY public.users
-    ADD CONSTRAINT user_unique UNIQUE (username);
+ADD CONSTRAINT user_unique UNIQUE (username);
 
 
 --
@@ -259,7 +260,9 @@ CREATE UNIQUE INDEX user_username_idx ON public.users USING btree (username);
 --
 
 ALTER TABLE ONLY public.friendship
-    ADD CONSTRAINT friendship1_user_fk FOREIGN KEY ("sourceId") REFERENCES public.users(userid) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT friendship1_user_fk FOREIGN KEY ("sourceId") REFERENCES public.users (
+    userid
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -268,7 +271,9 @@ ALTER TABLE ONLY public.friendship
 --
 
 ALTER TABLE ONLY public.friendship
-    ADD CONSTRAINT friendship_user_fk FOREIGN KEY ("targetId") REFERENCES public.users(userid) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT friendship_user_fk FOREIGN KEY ("targetId") REFERENCES public.users (
+    userid
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 -- Completed on 2024-12-10 11:15:29
@@ -284,5 +289,5 @@ PASSWORD 'a';
 
 GRANT CONNECT ON DATABASE atchess TO a;
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.users TO a;
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.friendship TO a;
+GRANT SELECT, INSERT, DELETE, UPDATE ON TABLE public.users TO a;
+GRANT SELECT, INSERT, DELETE, UPDATE ON TABLE public.friendship TO a;
