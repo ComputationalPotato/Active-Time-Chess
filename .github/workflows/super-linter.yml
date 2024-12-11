@@ -33,5 +33,11 @@ jobs:
           VALIDATE_SQLFLUFF: false
           VALIDATE_HTML: false
           VALIDATE_TYPESCRIPT_STANDARD: false
+          VALIDATE_HTML_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: false
+          VALIDATE_JSON_PRETTIER: false
+          VALIDATE_JAVASCRIPT_PRETTIER: false
+          VALIDATE_MARKDOWN_PRETTIER: false
+          VALIDATE_YAML_PRETTIER: false
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
