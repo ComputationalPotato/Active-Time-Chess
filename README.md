@@ -3,7 +3,7 @@
 
 ## Ensure you are able to log into the server
 - You need to be on the RPI wifi, or connected through RPI's VPN to be able to SSH into the server
-- In terminal, type 'ssh <rcsid>@<server-name>.cs.rpi.edu'
+- In terminal, type 'ssh \<rcsid\>@\<server-name\>.cs.rpi.edu'
   - Ex. ```ssh rpistudent@rtchess.cs.rpi.edu```
 - Enter your password when it asks
 - Ensure you have sudo access
@@ -17,7 +17,7 @@
 - Open '000-default.conf' with sudo
   - ```sudo nano 000-default.conf```
 - Change the line starting with 'DocumentRoot' to 'DocumentRoot /var/www/html/public'
-- Add the line ```ProxyPass / http://localhost:3000/ retry=5``` anywhere in the file between the <VirtualHost> tags.
+- Add the line ```ProxyPass / http://localhost:3000/ retry=5``` anywhere in the file between the \<VirtualHost\> tags.
 - Save and exit
   - Hit Ctrl+X
   - Enter ‘y’ in the prompt and hit enter
@@ -40,11 +40,11 @@
 
 ### Alternative if the above does not work (Do this on your local machine, not on the server)
 - Head to https://github.com/ComputationalPotato/Active-Time-Chess
-- Click the green '<> Code' button
+- Click the green '\<\> Code' button
 - Extract the downloaded zip file to /var/www/html
 - Open the terminal in the folder that contains the folder holding the extracted zip file
 - Copy the files to the server
-  - Type ‘scp -r <name-of-folder> <rcsid>@<server-name>:/var/www/html’
+  - Type ‘scp -r \<name-of-folder\> \<rcsid\>@\<server-name\>:/var/www/html’
     - Ex. ‘scp -r chess rpistudent@rtchess.cs.rpi.edu:/var/www/html’
   - Enter your password when instructed
 
@@ -72,4 +72,4 @@
   - Run ```sudo systemctl start apache2```
   - Run ```pm2 start server.js```
   - The server should be ready. If you try to load the server too fast after a restart, it could result in errors, so give 30s to a minute before seeing if it works. If not, you may need to repeat these steps.
-You should now be able to visit the server on your browser at ‘http://<server_name>.cs.rpi.edu’ ( Ex. http://rtchess.cs.rpi.edu )
+You should now be able to visit the server on your browser at ‘http://\<server_name\>.cs.rpi.edu’ ( Ex. http://rtchess.cs.rpi.edu )
