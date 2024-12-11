@@ -1,3 +1,4 @@
+-- sqlfluff:dialect:postgres
 --
 -- PostgreSQL database dump
 --
