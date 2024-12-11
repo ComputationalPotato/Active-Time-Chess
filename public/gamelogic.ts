@@ -1,93 +1,92 @@
 //import { checkKingCapture,showGameEndMessage } from './gameEnds.js';
 
+import { BoardPositionType, OrientationType, Piece, Square } from "./cbt.js";
+
 export class Game {
     //make const after switch to typescript
-    static readonly startPos = {
-        "a8": "bR",
-        "b8": "bN",
-        "c8": "bB",
-        "d8": "bQ",
-        "e8": "bK",
-        "f8": "bB",
-        "g8": "bN",
-        "h8": "bR",
-        "a7": "bP",
-        "b7": "bP",
-        "c7": "bP",
-        "d7": "bP",
-        "e7": "bP",
-        "f7": "bP",
-        "g7": "bP",
-        "h7": "bP",
-        "a2": "wP",
-        "b2": "wP",
-        "c2": "wP",
-        "d2": "wP",
-        "e2": "wP",
-        "f2": "wP",
-        "g2": "wP",
-        "h2": "wP",
-        "a1": "wR",
-        "b1": "wN",
-        "c1": "wB",
-        "d1": "wQ",
-        "e1": "wK",
-        "f1": "wB",
-        "g1": "wN",
-        "h1": "wR"
+    static readonly startPos: BoardPositionType = {
+        a8: Piece.bR,
+        b8: Piece.bN,
+        c8: Piece.bB,
+        d8: Piece.bQ,
+        e8: Piece.bK,
+        f8: Piece.bB,
+        //there is a typo in the typedef for Square which affects BoardPositionType as well
+        //@ts-expect-error
+        g8: Piece.bN,
+        h8: Piece.bR,
+        a7: Piece.bP,
+        b7: Piece.bP,
+        c7: Piece.bP,
+        d7: Piece.bP,
+        e7: Piece.bP,
+        f7: Piece.bP,
+        g7: Piece.bP,
+        h7: Piece.bP,
+        a2: Piece.wP,
+        b2: Piece.wP,
+        c2: Piece.wP,
+        d2: Piece.wP,
+        e2: Piece.wP,
+        f2: Piece.wP,
+        g2: Piece.wP,
+        h2: Piece.wP,
+        a1: Piece.wR,
+        b1: Piece.wN,
+        c1: Piece.wB,
+        d1: Piece.wQ,
+        e1: Piece.wK,
+        f1: Piece.wB,
+        g1: Piece.wN,
+        h1: Piece.wR
     };
-    static _=Object.freeze(this.startPos);
-    position:object;
-    pieceCooldowns: Map<string, number>;
-    winner: string|null;
+    static _ = Object.freeze(this.startPos);
+    position: BoardPositionType;
+    pieceCooldowns: Map<Square, number>;
+    winner: OrientationType | null;
     gameEnded: boolean;
-    COOLDOWN_TIMES:object;
+    COOLDOWN_TIMES: Map<string, number>;
+    pieceMoveHistory: Map<string, boolean>;
     constructor() {
-        this.position = {...Game.startPos};
+        this.position = { ...Game.startPos };
         this.gameEnded = false;
-        this.winner=null;
+        this.winner = null;
+        this.pieceMoveHistory = new Map<string, boolean>();
 
-        this.pieceCooldowns = new Map(); // Track piece cooldowns
+        this.pieceCooldowns = new Map<Square, number>(); // Track piece cooldowns
         console.log(this.pieceCooldowns);
-        
 
-        this.COOLDOWN_TIMES = {
-            'p': 2000,  // Pawns
-            'r': 3000,  // Rooks
-            'n': 3000,  // Knights
-            'b': 3000,  // Bishops
-            'q': 5000,  // Queens
-            'k': 4000   // Kings
-        };
+
+        this.COOLDOWN_TIMES = new Map<string, number>([
+            ['p', 2000],  // Pawns
+            ['r', 3000],  // Rooks
+            ['n', 3000],  // Knights
+            ['b', 3000],  // Bishops
+            ['q', 5000],  // Queens
+            ['k', 4000]   // Kings
+        ]);
     }
-    
 
-    checkForKingCapture(target) {
-        const targetPiece = this.position[target];
+
+    checkForKingCapture(target: Square) {
+        const targetPiece: Piece = this.position[target];
         if (targetPiece && targetPiece.toLowerCase().includes('k')) {
             this.winner = targetPiece.charAt(0) === 'w' ? 'black' : 'white';
-            //setTimeout(() => this.showGameEndMessage(winner), 100); // Small delay to ensure move completes
             return true;
         }
         return false;
     }
 
     // Helper function to get cooldown time for a piece
-    /**
-     * @param {string} piece
-     */
-    getPieceCooldownTime(piece: string): number {
+    getPieceCooldownTime(piece: Piece): number {
         const pieceType = piece.charAt(1).toLowerCase();
         return this.COOLDOWN_TIMES[pieceType] || 3000;
     }
 
-    
 
-    /**
-     * @param {string} from
-     * @param {string} to
-     */
-    isPathBlocked(from, to) {
+
+
+    isPathBlocked(from: Square, to: Square) {
         const rowFrom = parseInt(from.charAt(1));
         const rowTo = parseInt(to.charAt(1));
         const colFrom = from.charCodeAt(0) - 'a'.charCodeAt(0);
@@ -98,7 +97,7 @@ export class Game {
         let row = rowFrom + rowStep;
         let col = colFrom + colStep;
         while (row !== rowTo || col !== colTo) {
-            const position = String.fromCharCode('a'.charCodeAt(0) + col) + row;
+            const position: Square = (String.fromCharCode('a'.charCodeAt(0) + col) + row) as Square;
             if (this.position[position]) {
                 return true;
             }
@@ -108,29 +107,23 @@ export class Game {
         return false;
     }
 
-    pieceMoveHistory = new Map();
 
-    hasPieceMoved(square) {
+    hasPieceMoved(square: Square): boolean {
         return this.pieceMoveHistory.has(`${this.position[square]}-${square}`);
     }
 
-    recordPieceMove(piece, square) {
+    recordPieceMove(piece: Piece, square: Square): void {
         this.pieceMoveHistory.set(`${piece}-${square}`, true);
     }
 
-    /**
-     * @param {string} source
-     * @param {string} target
-     * @param {string} piece
-     */
-    isLegalMove(source, target, piece) {
+
+    isLegalMove(source: Square, target: Square, piece: Piece): boolean {
         // If game has ended, no moves are legal
         if (this.winner != null || this.gameEnded) {
             return false;
         }
 
-        if(this.position[source]!=piece)
-        {
+        if (this.position[source] != piece) {
             return false;
         }
 
@@ -153,18 +146,12 @@ export class Game {
 
         const targetPiece = this.position[target];
 
-        //i think this would mean that moves get to skip validation if they take a king?
-        /* // Check for king capture before validating the move
-        if (targetPiece && this.checkForKingCapture(target)) {
-            return true; // Allow the move that captures the king
-        } */
-
         if (targetPiece && targetPiece.charAt(0) === color) return false;
 
         switch (pieceType) {
             case 'p':
                 if (color === 'w') {
-                    console.log(colDiff,rowTo,rowFrom,targetPiece);
+                    console.log(colDiff, rowTo, rowFrom, targetPiece);
                     if (colDiff === 1 && rowDiff === 1 && targetPiece) {
                         return true;
                     }
@@ -204,7 +191,7 @@ export class Game {
                     const isKingsideCastling = colTo > colFrom;
                     const rookFile = isKingsideCastling ? 'h' : 'a';
                     const rookRank = rowFrom;
-                    const rookSquare = `${rookFile}${rookRank}`;
+                    const rookSquare = `${rookFile}${rookRank}` as Square;
 
                     if (!this.position[rookSquare] ||
                         this.position[rookSquare].charAt(1).toLowerCase() !== 'r' ||
@@ -226,7 +213,7 @@ export class Game {
     }
 
     // Check if pawn needs promotion
-    shouldPromotePawn(piece, target) {
+    shouldPromotePawn(piece: Piece, target: Square): boolean {
         const pieceType = piece.charAt(1).toLowerCase();
         const color = piece.charAt(0);
         const rank = parseInt(target.charAt(1));
@@ -235,21 +222,8 @@ export class Game {
     }
 
 
-    afterMove(source, target, piece) {
+    afterMove(source: Square, target: Square, piece: Piece): Piece {
         this.recordPieceMove(piece, source);
-
-        
-
-        //i think this one is outdated or smth.
-        /* // Handle castling
-        if (piece.charAt(1).toLowerCase() === 'k' && Math.abs(target.charCodeAt(0) - source.charCodeAt(0)) === 2) {
-            const isKingside = target.charAt(0) === 'g';
-            const rank = source.charAt(1);
-            const oldRookFile = isKingside ? 'h' : 'a';
-            const newRookFile = isKingside ? 'f' : 'd';
-            const rookPiece = piece.charAt(0) + 'R';
-            this.recordPieceMove(rookPiece, `${oldRookFile}${rank}`);
-        } */
 
         // Check if this was a castling move
         if (piece.charAt(1).toLowerCase() === 'k' && Math.abs(target.charCodeAt(0) - source.charCodeAt(0)) === 2) {
@@ -258,18 +232,18 @@ export class Game {
             const isKingside = target.charAt(0) === 'g';
             const oldRookFile = isKingside ? 'h' : 'a';
             const newRookFile = isKingside ? 'f' : 'd';
-            const rookSource = `${oldRookFile}${rank}`;
-            const rookTarget = `${newRookFile}${rank}`;
+            const rookSource = `${oldRookFile}${rank}` as Square;
+            const rookTarget = `${newRookFile}${rank}` as Square;
 
             // Update position to include rook movement
             this.position[rookTarget] = this.position[rookSource];
             delete this.position[rookSource];
         }
-        let promoted=null;
+        let promoted: Piece = null;
         // Handle pawn promotion
         if (this.shouldPromotePawn(piece, target)) {
-            promoted= piece.charAt(0) + 'Q';
-            this.position[target] =piece.charAt(0) + 'Q';
+            promoted = piece.charAt(0) + 'Q' as Piece;
+            this.position[target] = promoted;
         }
 
         // Set cooldown
@@ -279,11 +253,7 @@ export class Game {
         return promoted;
     }
 
-    promotePawn(square, color) {
-        return color + 'Q'; // Promote to queen (using uppercase 'Q' to match chess.js notation)
-    }
-    tryMove(source, target, piece)
-    {
+    tryMove(source: Square, target: Square, piece: Piece) {
         if (!this.isLegalMove(source, target, piece)) {
             console.log('Illegal move attempted');
             return false;
@@ -292,10 +262,10 @@ export class Game {
         if (this.position[target] && this.position[target].charAt(0) !== piece.charAt(0)) {
             this.checkForKingCapture(target);
         }
-        this.position[target]=piece;
+        this.position[target] = piece;
         delete this.position[source];
         this.afterMove(source, target, piece)
         return true;
     }
-    
+
 }

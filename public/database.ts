@@ -1,20 +1,18 @@
 import pg from 'pg';
-import { createHash } from 'crypto';
+import { BinaryLike, createHash } from 'crypto';
 
 
 const { Pool } = pg;
-const pool = new Pool({
-    // comment out so it uses unix sockets 
+const pool:pg.Pool = new Pool({
     host: 'localhost',  // Or your PostgreSQL server's address
     user: 'a',
     password: 'a',
-    database: 'atchess',  // Replace with your database name
-    // Leave out user and password to use peer authentication
+    database: 'atchess',  
 });
 
 
 // Authentication functions
-export async function createAccount(username, password) {
+export async function createAccount(username: string, password: string): Promise<boolean> {
     let client = await pool.connect();
     try {
         const hash = createHash('sha256');
@@ -32,7 +30,7 @@ export async function createAccount(username, password) {
     }
 }
 
-export async function tryLogin(username, password) {
+export async function tryLogin(username: string, password: string): Promise<string> {
     let client = await pool.connect();
     try {
         const hash = createHash('sha256');
@@ -50,7 +48,7 @@ export async function tryLogin(username, password) {
     }
 }
 
-export async function incWins(userid) {
+export async function incWins(userid: string): Promise<boolean> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -66,7 +64,7 @@ export async function incWins(userid) {
         client.release();
     }
 }
-export async function setELO(userid,num) {
+export async function setELO(userid: string,num: number): Promise<boolean> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -82,12 +80,12 @@ export async function setELO(userid,num) {
     }
 }
 
-export async function incLosses(userid) {
+export async function incLosses(userid: string): Promise<boolean> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
         const queryText = 'UPDATE users SET losses = losses + 1 WHERE userid = $1';
-        const res = await client.query(queryText, [userid]);
+        await client.query(queryText, [userid]);
         await client.query('COMMIT');
         return true;
     } catch (e) {
@@ -99,7 +97,7 @@ export async function incLosses(userid) {
     }
 }
 
-export async function getWinLoss(userId) {
+export async function getWinLoss(userId: string): Promise<{ wins: number; losses: number; }> {
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -121,7 +119,7 @@ export async function getWinLoss(userId) {
     }
 }
 
-export async function getELO(userId) {
+export async function getELO(userId: string): Promise<number> {
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -143,7 +141,7 @@ export async function getELO(userId) {
     }
 }
 
-export async function updateELO(userId1,elo1,userId2,elo2) {
+export async function updateELO(userId1: string,elo1: number,userId2: string,elo2: number): Promise<boolean> {
     if(!userId1||!userId2 ||!elo1 ||!elo2)
     {
         return false;
@@ -167,7 +165,7 @@ export async function updateELO(userId1,elo1,userId2,elo2) {
     }
 }
 
-export async function getName(userId) {
+export async function getName(userId: string): Promise<string> {
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -188,7 +186,7 @@ export async function getName(userId) {
         client.release();
     }
 }
-export async function getId(username) {
+export async function getId(username: string): Promise<string> {
     let client = await pool.connect();
     try {
             // Use a parameterized query to fetch wins and losses
@@ -197,11 +195,6 @@ export async function getId(username) {
         
             if (res.rows.length > 0) {
               const  id  = res.rows[0]["userid"];
-              /* console.log(res.rows);
-              console.log(res.rows[0]);
-              console.log(res.rows[0][0]);
-              console.log(Object.keys(res.rows[0])); // This will print the actual column names
-              console.log(res.rows[0]["userid"]); */
               console.log(`User ${username} - id: ${id}`);
               return id;
             } else {
@@ -216,7 +209,7 @@ export async function getId(username) {
 }
 //send friend request. creates friendship object with userId as source and targetId as target
 //a user accepts a friend request by sending a request to the requester
-export async function sendFreq(userId,targetId) {
+export async function sendFreq(userId: string,targetId: string): Promise<boolean> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -232,7 +225,7 @@ export async function sendFreq(userId,targetId) {
     }
 }
 
-export async function getSentFreqs(userId) {
+export async function getSentFreqs(userId: string): Promise<any[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -248,7 +241,7 @@ export async function getSentFreqs(userId) {
     }
 }
 
-export async function getIncomingFreqs(userId) {
+export async function getIncomingFreqs(userId: string): Promise<any[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -264,7 +257,7 @@ export async function getIncomingFreqs(userId) {
     }
 }
 //get friend requests that have been accepted
-export async function getFriends(userId) {
+export async function getFriends(userId: string): Promise<any[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -284,7 +277,7 @@ where u.userid=$1`;
     }
 }
 
-export async function deleteFriend(userId,targetId) {
+export async function deleteFriend(userId: string,targetId: string): Promise<boolean> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');

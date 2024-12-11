@@ -7,6 +7,7 @@ import { tryLogin, createAccount, incWins, incLosses, getWinLoss, getName,getId,
 
 import { Game } from "./public/gamelogic.js"
 import Elo from 'arpad';
+import { OrientationType,Square } from './public/cbt.js';
 
 const elo = new Elo();
 const __filename = fileURLToPath(import.meta.url);
@@ -23,7 +24,7 @@ app.use('/chessboardjs', express.static(path.join(__dirname, 'node_modules', 'ch
 
 // Game state storage
 const matches = new Map<string, Match>();
-const playerMatches = new Map();
+const playerMatches = new Map<string,string>();
 
 // Constants
 const COOLDOWN_TIME = 3000; // 3 seconds to match client // 3 seconds to match client
@@ -45,7 +46,7 @@ class Match {
         this.ranked = ranked;
     }
 
-    addPlayer(socketId: string, userId: string) {
+    addPlayer(socketId: string, userId: string): boolean {
         if (this.players.length >= 2) return false;
         this.players.push(socketId);
         this.userIds.set(socketId, userId);
@@ -58,56 +59,46 @@ class Match {
         return true;
     }
 
-    removePlayer(socketId) {
+    removePlayer(socketId: string): void {
         this.players = this.players.filter(id => id !== socketId);
     }
 
-    addSpectator(socketId) {
+    addSpectator(socketId: string): void {
         this.spectators.add(socketId);
     }
 
-    removeSpectator(socketId) {
+    removeSpectator(socketId: string): void {
         this.spectators.delete(socketId);
     }
 
-    getPlayerColor(socketId) {
+    getPlayerColor(socketId: string): OrientationType {
         const index = this.players.indexOf(socketId);
         return index === 0 ? 'white' : index === 1 ? 'black' : null;
     }
-    //these are done in the Game() obj
-    /* isPieceOnCooldown(square) {
-        if (!this.pieceCooldowns.has(square)) return false;
-        return Date.now() < this.pieceCooldowns.get(square);
-    }
 
-    setCooldown(square) {
-        this.pieceCooldowns.set(square, Date.now() + COOLDOWN_TIME);
-    } */
 }
 
-io.on('connection', (socket) => {
+io.on('connection', (socket): void => {
     console.log('User connected:', socket.id);
 
-    socket.on('lfg', async (ranked, userId, callback) => {
+    socket.on('lfg', async (ranked:boolean, userId:string, callback:({})=>{}): Promise<void> => {
         console.log("got lfg");
         for (let [id, g] of matches.entries()) {
-            console.log(g)
-            console.log(g.players.length)
             if (g.players.length < 2 && g.game.winner == null) {
                 if (g.ranked != ranked || (ranked && Math.abs(await getELO(g.userIds.get(g.players[0])) - await getELO(userId)) > 300)) {
                     continue;
                 }
                 console.log('found open game');
+                //callback is just a way of sending a response
                 callback({ gameId: id });
                 return;
             }
         }
         console.log("sent back new game");
-        //console.log(callback)
         callback({ gameId: Math.random().toString(36).substring(7) });
     });
 
-    socket.on('joinGame', (gameId,userId,ranked) => {
+    socket.on('joinGame', (gameId:string,userId:string,ranked:boolean): void => {
         // Create or join game
         if (!matches.has(gameId)) {
             matches.set(gameId, new Match(gameId,ranked));
@@ -140,16 +131,13 @@ io.on('connection', (socket) => {
             }
         } else {    
             //spectators removed. this just tells client to reload
-            // Handle spectator
-            //match.addSpectator(socket.id);
-            //socket.join(gameId);
             socket.emit('spectatorJoined', {
                 position: match.game.position,
                 cooldowns: Array.from(match.game.pieceCooldowns.entries())
             });
         }
     });
-    socket.on('requestDraw', () => {
+    socket.on('requestDraw', (): void => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
 
@@ -163,14 +151,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('acceptDraw', () => {
+    socket.on('acceptDraw', (): void => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
         console.log('Both players accepted the draw. Emitting drawAccepted event.');
         io.to(gameId).emit('drawAccepted');
     });
 
-    socket.on('declineDraw', () => {
+    socket.on('declineDraw', (): void => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
         console.log('Draw Declined.');
@@ -179,7 +167,7 @@ io.on('connection', (socket) => {
 
 
 
-    socket.on('move', async (data) => {
+    socket.on('move', async (data:{source:Square,target:Square}): Promise<void> => {
         const matchId = playerMatches.get(socket.id);
         if (!matchId) return;
 
@@ -191,7 +179,7 @@ io.on('connection', (socket) => {
         // Verify it's the player's turn based on piece color
         const piece = match.game.position[source];
         const playerColor = match.getPlayerColor(socket.id);
-        const pieceColor = piece.charAt(0) === 'w' ? 'white' : 'black';
+        const pieceColor:OrientationType = piece.charAt(0) === 'w' ? 'white' : 'black';
         if (playerColor !== pieceColor) {
 
         }
@@ -212,12 +200,6 @@ io.on('connection', (socket) => {
             console.log("game won");
             io.to(matchId).emit('gameOver', { winner: match.game.winner, method: "capture" });
             if (match.ranked) {
-                console.log(match.ranked)
-                console.log(match.userIds.entries());
-                console.log(match.players);
-                console.log(`p1 id: ${match.userIds.get(match.players[0])}`)
-                console.log(match.userIds.get(match.players[1]))
-                console.log(`winner is ${match.game.winner}`)
                 if (match.game.winner == "white") {
                     incWins(match.userIds.get(match.players[0]));
                     incLosses(match.userIds.get(match.players[1]));
@@ -226,37 +208,14 @@ io.on('connection', (socket) => {
                     incLosses(match.userIds.get(match.players[0]));
                     incWins(match.userIds.get(match.players[1]));
                 }
-                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds.get(match.players[0])), await getELO(match.userIds.get(match.players[1])), match.game.winner == "white");
+                let [p1elo, p2elo] = eloCalc(await getELO(match.userIds.get(match.players[0])), await getELO(match.userIds.get(match.players[1])), match.game.winner == "white") as [number,number];
                 updateELO(match.userIds.get(match.players[0]), p1elo, match.userIds.get(match.players[1]), p2elo);
             }
         }
     });
 
-    socket.on('resetBoard', () => {
-        const matchId = playerMatches.get(socket.id);
-        if (!matchId) return;
 
-        const match = matches.get(matchId);
-        if (!match) return;
-
-        match.game.position = {...Game.startPos};
-        match.game.pieceCooldowns.clear();
-        io.to(matchId).emit('boardReset', { position: {...Game.startPos} });
-    });
-
-    socket.on('clearBoard', () => {
-        const matchId = playerMatches.get(socket.id);
-        if (!matchId) return;
-
-        const match = matches.get(matchId);
-        if (!match) return;
-
-        match.game.position = {};
-        match.game.pieceCooldowns.clear();
-        io.to(matchId).emit('boardCleared');
-    });
-
-    socket.on('resign', () => {
+    socket.on('resign', (): void => {
         const matchId = playerMatches.get(socket.id);
         if (!matchId) return;
 
@@ -264,13 +223,13 @@ io.on('connection', (socket) => {
         if (!match) return;
 
         const playerColor = match.getPlayerColor(socket.id);
-        const winner = playerColor === 'white' ? 'black' : 'white';
+        const winner:OrientationType = playerColor === 'white' ? 'black' : 'white';
         match.game.winner = winner;
         // Emit a game over event to declare the winner
         io.to(matchId).emit('gameOver', { winner: winner, method: "resign" });
     });
 
-    socket.on('matchmakingTimeout', () => {
+    socket.on('matchmakingTimeout', (): void => {
         const gameId = playerMatches.get(socket.id);
         if (!gameId) return;
     
@@ -285,7 +244,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (): void => {
         const gameId = playerMatches.get(socket.id);
         if (gameId) {
             const game = matches.get(gameId);
@@ -312,13 +271,13 @@ io.on('connection', (socket) => {
 
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', (_req, res): void => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', async (req, res): Promise<void> => {
     try {
-        const { username, password } = req.body;
+        const { username, password } = (req.body as {username:string,password:string});
         const userId = await tryLogin(username, password);
 
         if (userId) {
@@ -341,9 +300,9 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.post('/api/create-account', async (req, res) => {
+app.post('/api/create-account', async (req, res): Promise<void> => {
     try {
-        const { username, password } = req.body;
+        const { username, password } = (req.body as {username:string,password:string});
         const success = await createAccount(username, password);
 
         res.json({
@@ -359,9 +318,9 @@ app.post('/api/create-account', async (req, res) => {
     }
 });
 
-app.post('/api/incWins', async (req, res) => {
+app.post('/api/incWins', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const success = await incWins(userId);
 
         res.json({
@@ -376,9 +335,9 @@ app.post('/api/incWins', async (req, res) => {
         });
     }
 });
-app.post('/api/incLosses', async (req, res) => {
+app.post('/api/incLosses', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const success = await incLosses(userId);
 
         res.json({
@@ -394,9 +353,9 @@ app.post('/api/incLosses', async (req, res) => {
     }
 });
 
-app.post('/api/getWinLoss', async (req, res) => {
+app.post('/api/getWinLoss', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const { wins, losses } = (await getWinLoss(userId)) || { wins: -1, losses: -1 };
         if (wins < 0 || losses < 0) {
             throw "getWinLoss returned null";
@@ -414,9 +373,9 @@ app.post('/api/getWinLoss', async (req, res) => {
         });
     }
 });
-app.post('/api/sendFreq', async (req, res) => {
+app.post('/api/sendFreq', async (req, res): Promise<void> => {
     try {
-        const { userId, targetId } = req.body;
+        const { userId, targetId } = (req.body as {userId:string,targetId:string});
         const success= await sendFreq(userId,targetId);
 
         res.json({
@@ -430,9 +389,9 @@ app.post('/api/sendFreq', async (req, res) => {
         });
     }
 });
-app.post('/api/getSentFreqs', async (req, res) => {
+app.post('/api/getSentFreqs', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const result= await getSentFreqs(userId);
 
         res.json({
@@ -446,9 +405,9 @@ app.post('/api/getSentFreqs', async (req, res) => {
         });
     }
 });
-app.post('/api/getIncomingFreqs', async (req, res) => {
+app.post('/api/getIncomingFreqs', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const result= await getIncomingFreqs(userId);
 
         res.json({
@@ -462,9 +421,9 @@ app.post('/api/getIncomingFreqs', async (req, res) => {
         });
     }
 });
-app.post('/api/getFriends', async (req, res) => {
+app.post('/api/getFriends', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const result= await getFriends(userId);
 
         res.json({
@@ -478,9 +437,9 @@ app.post('/api/getFriends', async (req, res) => {
         });
     }
 });
-app.post('/api/deleteFriend', async (req, res) => {
+app.post('/api/deleteFriend', async (req, res): Promise<void> => {
     try {
-        const { userId, targetId } = req.body;
+        const { userId, targetId } = (req.body as {userId:string,targetId:string});
         const success= await deleteFriend(userId,targetId);
 
         res.json({
@@ -494,9 +453,9 @@ app.post('/api/deleteFriend', async (req, res) => {
         });
     }
 });
-app.post('/api/getId', async (req, res) => {
+app.post('/api/getId', async (req, res): Promise<void> => {
     try {
-        const { username } = req.body;
+        const { username } = (req.body as {username:string});
         const result= await getId(username);
 
         res.json({
@@ -511,9 +470,9 @@ app.post('/api/getId', async (req, res) => {
     }
 });
 
-app.post('/api/getELO', async (req, res) => {
+app.post('/api/getELO', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const result= await getELO(userId);
 
         res.json({
@@ -528,9 +487,9 @@ app.post('/api/getELO', async (req, res) => {
     }
 });
 
-app.post('/api/getName', async (req, res) => {
+app.post('/api/getName', async (req, res): Promise<void> => {
     try {
-        const { userId } = req.body;
+        const { userId } = (req.body as {userId:string});
         const result= await getName(userId);
 
         res.json({
@@ -551,7 +510,7 @@ http.listen(PORT, () => {
 });
 
 //returns [p1newELO,p2newELO]
-function eloCalc(p1ELO: number, p2ELO: number, p1won: boolean) {
+function eloCalc(p1ELO: number, p2ELO: number, p1won: boolean): [number,number] {
     if (p1won) {
         return [elo.newRatingIfWon(p1ELO, p2ELO), elo.newRatingIfLost(p2ELO, p1ELO)];
     }
