@@ -30,7 +30,7 @@
   - Alternative if the above does not work
     - Head to <https://github.com/ComputationalPotato/Active-Time-Chess>
     - Click the green ```<> Code``` button
-    - Extract the Zip to ```/var/www/html```
+    - Extract the ZIP to ```/var/www/html```
 
 - Install Node.js, node package manager, and pm2
   - Run ```sudo apt install nodejs``` in terminal, entering ```y``` when it asks
