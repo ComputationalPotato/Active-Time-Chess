@@ -1,43 +1,47 @@
-//import './accounts.js';
+import { getId, sendFreq, deleteFriend, getSentFreqs, getELO, getName, getIncomingFreqs, getFriends, getWinLoss } from './accounts.js';
 
 // Check if user is logged in
 const userId = sessionStorage.getItem('userId');
 if (!userId) {
     window.location.href = 'index.html';
 }
-async function sendFreqButton() {
-    const targetName = document.getElementById("sendFreqName").value;
+async function sendFreqButton(): Promise<void> {
+    const targetName = (document.getElementById("sendFreqName")as HTMLInputElement).value;
     const targetId = await getId(targetName);
     const userId = sessionStorage.getItem('userId');
     await sendFreq(userId, targetId);
     await updateFriendStuff();
 
 }
-async function handleXInc(row) {
+//when pressing the x button on an incoming friend request
+async function handleXInc(row: { sourceId: string; }): Promise<void> {
     const targetId = row.sourceId;//incoming means that row.targetId is you.
     const userId = sessionStorage.getItem('userId');
     await deleteFriend(userId, targetId);
     await updateFriendStuff();
 }
-async function handleXPend(row) {
+//when pressing the x button on an outgoing friend request
+async function handleXPend(row: { targetId: string; }): Promise<void> {
     const targetId = row.targetId;
     const userId = sessionStorage.getItem('userId');
     await deleteFriend(userId, targetId);
     await updateFriendStuff();
 }
-async function handleYes(row) {
+//when pressing the check button on an incoming friend request
+async function handleYes(row: { sourceId: string; }): Promise<void> {
     const targetId = row.sourceId;//incoming means that row.targetId is you.
     const userId = sessionStorage.getItem('userId');
     await sendFreq(userId, targetId);
     await updateFriendStuff();
 }
-async function getPend() {
+//loads user's outgoing friend requests
+async function getPend(): Promise<void> {
     const userId = sessionStorage.getItem('userId');
     const data = await getSentFreqs(userId);
     const outputDiv = document.getElementById("pending");
     outputDiv.innerHTML = ""; // Clear previous results
     // Dynamically create and append rows for each result
-    data.forEach(async row => {
+    data.forEach(async (row): Promise<void> => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row";
 
@@ -52,7 +56,9 @@ async function getPend() {
         const xButton = document.createElement("button");
         xButton.textContent = "✖";
         xButton.style.marginLeft = "5px";
-        xButton.onclick = async () => await handleXPend(row);
+        xButton.onclick = async (): Promise<void> => {
+            return await handleXPend(row);
+        };
 
         // Append content and buttons to the row
         rowDiv.appendChild(content);
@@ -62,13 +68,14 @@ async function getPend() {
         outputDiv.appendChild(rowDiv);
     });
 }
-async function getInc() {
+//loads user's incoming friend requests
+async function getInc(): Promise<void> {
     const userId = sessionStorage.getItem('userId');
     const data = await getIncomingFreqs(userId);
     const outputDiv = document.getElementById("incoming");
     outputDiv.innerHTML = ""; // Clear previous results
     // Dynamically create and append rows for each result
-    data.forEach(async row => {
+    data.forEach(async (row): Promise<void> => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row";
 
@@ -99,14 +106,14 @@ async function getInc() {
         outputDiv.appendChild(rowDiv);
     });
 }
-
-async function getFriend() {
+//loads user's friends
+async function getFriend(): Promise<void> {
     const userId = sessionStorage.getItem('userId');
     const data = await getFriends(userId);
     const outputDiv = document.getElementById("friendsList");
     outputDiv.innerHTML = ""; // Clear previous results
     // Dynamically create and append rows for each result
-    data.forEach(async row => {
+    data.forEach(async (row): Promise<void> => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row";
 
@@ -132,7 +139,7 @@ async function getFriend() {
     });
 }
 // Update user stats
-async function updateStats() {
+async function updateStats(): Promise<void> {
     try {
         const stats = await getWinLoss(userId);
         const elo = await getELO(userId);
@@ -161,14 +168,14 @@ async function updateStats() {
     }
 }
 
-async function updateFriendStuff() {
+async function updateFriendStuff(): Promise<void> {
     await getFriend();
     await getPend();
     await getInc();
 }
 
 // Initialize page
-async function initializePage() {
+async function initializePage(): Promise<void> {
     console.log("page init start");
     // Get username from sessionStorage if you stored it during login
     const username = sessionStorage.getItem('username') || 'User';

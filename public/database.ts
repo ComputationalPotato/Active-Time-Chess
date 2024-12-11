@@ -225,7 +225,7 @@ export async function sendFreq(userId: string,targetId: string): Promise<boolean
     }
 }
 
-export async function getSentFreqs(userId: string): Promise<any[]> {
+export async function getSentFreqs(userId: string): Promise<{targetId:string}[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -241,7 +241,7 @@ export async function getSentFreqs(userId: string): Promise<any[]> {
     }
 }
 
-export async function getIncomingFreqs(userId: string): Promise<any[]> {
+export async function getIncomingFreqs(userId: string): Promise<{sourceId:string}[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -257,7 +257,7 @@ export async function getIncomingFreqs(userId: string): Promise<any[]> {
     }
 }
 //get friend requests that have been accepted
-export async function getFriends(userId: string): Promise<any[]> {
+export async function getFriends(userId: string): Promise<{userid:string}[]> {
     let client = await pool.connect();
     try {
         await client.query('BEGIN');

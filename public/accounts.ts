@@ -1,5 +1,5 @@
 // accounts.js
-async function trylogin(username, password) {
+export async function trylogin(username, password) {
     try {
         const response = await fetch('/api/login', {
             method: 'POST',
@@ -32,7 +32,7 @@ async function trylogin(username, password) {
     }
 }
 
-async function createAccount(username, password) {
+export async function createAccount(username, password) {
     try {
         const response = await fetch('/api/create-account', {
             method: 'POST',
@@ -117,7 +117,7 @@ async function incLosses(userId) {
     }
 }
 
-async function getWinLoss(userId) {
+export async function getWinLoss(userId) {
     try {
         const response = await fetch('/api/getWinLoss', {
             method: 'POST',
@@ -138,7 +138,7 @@ async function getWinLoss(userId) {
     }
 }
 
-async function sendFreq(userId,targetId) {
+export async function sendFreq(userId: string,targetId: string): Promise<void> {
     try {
         const response = await fetch('/api/sendFreq', {
             method: 'POST',
@@ -151,7 +151,7 @@ async function sendFreq(userId,targetId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {success:boolean};
         
         if (data.success) {
             // Store user info in session/localStorage if needed
@@ -167,7 +167,7 @@ async function sendFreq(userId,targetId) {
     }
 }
 
-async function getSentFreqs(userId) {
+export async function getSentFreqs(userId: string): Promise<{targetId:string}[]> {
     try {
         const response = await fetch('/api/getSentFreqs', {
             method: 'POST',
@@ -179,7 +179,7 @@ async function getSentFreqs(userId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {freqs:{targetId:string}[]};
         
         return data.freqs;
     } catch (error) {
@@ -187,7 +187,7 @@ async function getSentFreqs(userId) {
         alert('An error occurred during getSentFreqs');
     }
 }
-async function getIncomingFreqs(userId) {
+export async function getIncomingFreqs(userId: string): Promise<{ sourceId: string; }[]> {
     try {
         const response = await fetch('/api/getIncomingFreqs', {
             method: 'POST',
@@ -199,7 +199,7 @@ async function getIncomingFreqs(userId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {freqs:{sourceId:string}[]};
         
         return data.freqs;
     } catch (error) {
@@ -207,7 +207,7 @@ async function getIncomingFreqs(userId) {
         alert('An error occurred during getIncomingFreqs');
     }
 }
-async function getFriends(userId) {
+export async function getFriends(userId: string): Promise<{ userid: string; }[]> {
     try {
         const response = await fetch('/api/getFriends', {
             method: 'POST',
@@ -219,7 +219,7 @@ async function getFriends(userId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {freqs:{userid:string}[]};
         
         return data.freqs;
     } catch (error) {
@@ -227,7 +227,7 @@ async function getFriends(userId) {
         alert('An error occurred during getFriends');
     }
 }
-async function deleteFriend(userId,targetId) {
+export async function deleteFriend(userId: string,targetId: string): Promise<void> {
     try {
         const response = await fetch('/api/deleteFriend', {
             method: 'POST',
@@ -255,7 +255,7 @@ async function deleteFriend(userId,targetId) {
         alert('An error occurred during deleteFriend');
     }
 }
-async function getId(username) {
+export async function getId(username: string): Promise<string> {
     try {
         const response = await fetch('/api/getId', {
             method: 'POST',
@@ -267,7 +267,7 @@ async function getId(username) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {id:string};
         
         return data.id;
     } catch (error) {
@@ -276,7 +276,7 @@ async function getId(username) {
     }
 }
 
-async function getELO(userId) {
+export async function getELO(userId: string): Promise<number> {
     try {
         const response = await fetch('/api/getELO', {
             method: 'POST',
@@ -288,7 +288,7 @@ async function getELO(userId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {elo:number};
         //console.log(data);
         return data.elo;
     } catch (error) {
@@ -296,7 +296,7 @@ async function getELO(userId) {
         alert('An error occurred during get elo');
     }
 }
-async function getName(userId) {
+export async function getName(userId: string): Promise<string> {
     try {
         const response = await fetch('/api/getName', {
             method: 'POST',
@@ -308,7 +308,7 @@ async function getName(userId) {
             })
         });
 
-        const data = await response.json();
+        const data = await response.json() as {name:string};
         
         return data.name;
     } catch (error) {

@@ -44,41 +44,6 @@
         </div>
     </div>
 
-    <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-            const loadingDiv = document.getElementById('loading');
-            const form = document.getElementById('loginForm');
-            
-            // Reset error message
-            errorDiv.style.display = 'none';
-            
-            // Show loading indicator
-            loadingDiv.style.display = 'block';
-            form.querySelectorAll('button').forEach(btn => btn.disabled = true);
-            
-            try {
-                const result = await trylogin(username, password);
-                
-                if (result) {
-                    window.location.href = '/account.html';
-                } else {
-                    errorDiv.textContent = 'Invalid username or password';
-                    errorDiv.style.display = 'block';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
-            } finally {
-                loadingDiv.style.display = 'none';
-                form.querySelectorAll('button').forEach(btn => btn.disabled = false);
-            }
-        }
-    </script>
-    <script src="accounts.js"></script>
+    <script src="login_page.js" type="module"></script>
 </body>
 </html>
