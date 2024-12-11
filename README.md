@@ -20,7 +20,7 @@
   - If you encounter access denied errors, you may need to run ```sudo chown -R $USER:$USER /var/www``` to change the owner to user (DO NOT DO THIS ON A LIVE SERVER, ONLY FOR TESTING)
     - Alternatively, log into root using ```sudo -s``` and then entering your password
 
-  - Using the terminal in git
+  - Using the terminal in Git
     - Open the terminal
     - Clone the repository to ```/var/www/html/``` by moving to that location in terminal and entering
       - ```git clone git@github.com:ComputationalPotato/Active-Time-Chess.git .```
@@ -30,7 +30,7 @@
   - Alternative if the above does not work
     - Head to <https://github.com/ComputationalPotato/Active-Time-Chess>
     - Click the green ```<> Code``` button
-    - Extract the zip to ```/var/www/html```
+    - Extract the Zip to ```/var/www/html```
 
 - Install Node.js, node package manager, and pm2
   - Run ```sudo apt install nodejs``` in terminal, entering ```y``` when it asks
@@ -41,11 +41,11 @@
 - Convert TS files to JS
   - in ```/var/www/html``` run ```npx tsc  --noCheck --target es2017```
 
-- Install postgreSQL
+- Install PostgreSQL
   - Open terminal
   - Run ```sudo apt install postgresql```
 
-- Configure postgreSQL
+- Configure PostgreSQL
   - Run ```sudo -u postgres psql```
   - Run ```\c atchess```
   - Run ```\i /var/www/html/dump.sql```
