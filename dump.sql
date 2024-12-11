@@ -25,7 +25,8 @@ SET row_security = off;
 -- Name: atchess; Type: DATABASE; Schema: -; Owner: -
 --
 
-CREATE DATABASE atchess WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
+CREATE DATABASE atchess WITH TEMPLATE = template0 ENCODING = 'UTF8'
+LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 
 
 \connect atchess
@@ -285,4 +286,3 @@ GRANT CONNECT ON DATABASE atchess TO a;
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.users TO a;
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.friendship TO a;
-
