@@ -1,5 +1,5 @@
 // accounts.js
-export async function trylogin(username, password) {
+export async function trylogin(username: string, password: string): Promise<boolean> {
     try {
         const response = await fetch('/api/login', {
             method: 'POST',
@@ -32,7 +32,7 @@ export async function trylogin(username, password) {
     }
 }
 
-export async function createAccount(username, password) {
+export async function createAccount(username: string, password: string): Promise<void> {
     try {
         const response = await fetch('/api/create-account', {
             method: 'POST',
@@ -61,7 +61,7 @@ export async function createAccount(username, password) {
     }
 }
 
-async function incWins(userId) {
+async function incWins(userId: string): Promise<void> {
     try {
         const response = await fetch('/api/incWins', {
             method: 'POST',
@@ -89,7 +89,7 @@ async function incWins(userId) {
     }
 }
 
-async function incLosses(userId) {
+async function incLosses(userId: string): Promise<void> {
     try {
         const response = await fetch('/api/incLosses', {
             method: 'POST',
@@ -117,7 +117,7 @@ async function incLosses(userId) {
     }
 }
 
-export async function getWinLoss(userId) {
+export async function getWinLoss(userId: string): Promise<{ wins: number; losses: number; }> {
     try {
         const response = await fetch('/api/getWinLoss', {
             method: 'POST',
